@@ -10,37 +10,56 @@
 <div class="lotto-container">
     {{ header_html|safe }}
 
+    <!-- อัตราจ่าย: radio button -->
     <form method="POST" class="form-inline">
         <label>อัตราจ่าย:</label>
-        <select name="pricerate">
-            <option value="70" {% if pricerate==70 %}selected{% endif %}>70 บาท</option>
-            <option value="90" {% if pricerate==90 %}selected{% endif %}>90 บาท</option>
-        </select>
-        <button type="submit" name="action" value="set_pricerate">OK</button>
+        <label class="radio-label">
+            <input type="radio" name="pricerate" value="70" onchange="this.form.submit()" {% if pricerate==70 %}checked{% endif %}> 70 บาท
+        </label>
+        <label class="radio-label">
+            <input type="radio" name="pricerate" value="90" onchange="this.form.submit()" {% if pricerate==90 %}checked{% endif %}> 90 บาท
+        </label>
+        <input type="hidden" name="action" value="set_pricerate">
     </form>
 
+    <!-- ประเภทการแทง -->
     <div class="bet-type-buttons">
-        {% for bt in ["2 ตัว", "3 ตัว", "6 กลับ", "วิ่ง", "รูด", "19 ประตู"] %}
+        {% for bt in ["2 ตัว", "3 ตัว", "6 กลับ"] %}
             <form method="POST" style="display:inline;">
                 <input type="hidden" name="bet_type" value="{{ bt }}">
-                <button type="submit" name="action" value="set_bet_type" class="btn-type">{{ bt }}</button>
+                <button type="submit" name="action" value="set_bet_type" class="btn-type {% if bet_type == bt %}selected{% endif %}">{{ bt }}</button>
             </form>
         {% endfor %}
     </div>
 
+    <!-- ปุ่มใส่เลขเบิ้ล/ตอง -->
+    <form method="POST" style="margin-bottom: 10px;">
+        <button type="submit" name="action" value="toggle_double" class="btn-type {% if double_mode %}selected{% endif %}">+ ใส่เลขเบิ้ล/ตอง</button>
+    </form>
+
+    <!-- กรอกเลข -->
     <form method="POST" class="form-grid">
-        <label>ไส่เลข:</label>
+        <label>ใส่เลข:</label>
         <input type="text" name="numbers_input" required>
-        <button type="submit" name="action" value="add_number" class="btn-blue">+ ไส่เลข</button>
+        <button type="submit" name="action" value="add_number" class="btn-blue">+ ใส่เลข</button>
     </form>
 
     <p class="numbers-display">เลขที่แยก: {{ numbers|join(" ") }}</p>
 
+    <!-- ใส่ราคา ตามประเภท -->
     <form method="POST" class="form-grid">
         <label>ใส่ราคา</label>
-        <input type="number" name="price_top" value="{{ price_top }}" placeholder="บน">
-        <input type="number" name="price_bottom" value="{{ price_bottom }}" placeholder="ล่าง">
-        <input type="number" name="price_tod" value="{{ price_tod }}" placeholder="โต๊ด">
+        {% if bet_type == "2 ตัว" %}
+            <input type="number" name="price_top" value="{{ price_top }}" placeholder="บน">
+            <input type="number" name="price_bottom" value="{{ price_bottom }}" placeholder="ล่าง">
+        {% elif bet_type == "3 ตัว" %}
+            <input type="number" name="price_top" value="{{ price_top }}" placeholder="ตรง">
+            <input type="number" name="price_tod" value="{{ price_tod }}" placeholder="โต๊ด">
+        {% else %}
+            <input type="number" name="price_top" value="{{ price_top }}" placeholder="บน">
+            <input type="number" name="price_bottom" value="{{ price_bottom }}" placeholder="ล่าง">
+            <input type="number" name="price_tod" value="{{ price_tod }}" placeholder="โต๊ด">
+        {% endif %}
         <button type="submit" name="action" value="add_bill" class="btn-blue">เพิ่มบิล</button>
     </form>
 
