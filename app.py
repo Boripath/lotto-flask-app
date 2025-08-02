@@ -68,6 +68,8 @@ def index():
 
         elif action == "toggle_double":
             toggle_double()
+            # กหลังใส่เลขเบิ้ล/ตอง ไปให้อัตโu0e19มัติ
+            process_number_input("")
 
         return redirect(url_for("index"))
 
