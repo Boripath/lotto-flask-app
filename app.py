@@ -66,13 +66,16 @@ def index():
             memo_text = request.form.get("memo", "")
             set_memo(memo_text)
 
+        elif action == "toggle_double":
+            toggle_double()
+
         return redirect(url_for("index"))
 
     draw_date, countdown = select_draw_date()
     header_html = render_header(draw_date, countdown)
     pricerate = get_pricerate()
     bet_type = get_bet_type()
-    numbers, _, _ = get_number_input()
+    numbers, double_mode = get_number_input()
     price_top, price_bottom, price_tod = get_price_inputs()
     bills = get_bill_table_data()
     memo, total_amount = get_memo_and_total()
@@ -88,7 +91,8 @@ def index():
                            price_tod=price_tod,
                            bills=bills,
                            memo=memo,
-                           total_amount=total_amount)
+                           total_amount=total_amount,
+                           double_mode=double_mode)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
