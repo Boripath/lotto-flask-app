@@ -46,3 +46,9 @@ def generate_6_glub(number):
     for p in permutations(digits):
         perms.add(''.join(p))
     return list(perms)
+    
+def format_currency(amount):
+    """
+    แปลงจำนวนเงินเป็นรูปแบบ 1,234 บาท
+    """
+    return f"{int(amount):,} บาท"
