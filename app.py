@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from save import save_to_csv
+from save import save_to_google_sheet  # เปลี่ยนจาก save_to_csv
 import os
 
 app = Flask(__name__)
