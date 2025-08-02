@@ -5,39 +5,86 @@
     <meta charset="UTF-8">
     <title>โพยหวยออนไลน์</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
 </head>
 <body>
-    <div class="container">
-        <h1>🇹🇭 โพยหวยออนไลน์</h1>
+<div class="container">
+    {{ header_html|safe }}
 
-        <!-- โซนเดรือนาเหยักบาน
-draw_date, pricerate, bet_type, numbers, bills, memo, total_amount ได้จาก app.py ส่ง-->
+    <!-- เลือกงวด -->
+    <form method="POST">
+        <label>เลือกงวด:</label>
+        <input type="date" name="draw_date" required>
+        <button type="submit" name="action" value="select_draw">ตกลง</button>
+    </form>
 
-        <!-- TODO: แสดง input form, ตารางบิล, บันทึก -->
+    <!-- เลือกอัตราจ่าย -->
+    <form method="POST">
+        <label>เลือกอัตราจ่าย:</label>
+        <select name="pricerate">
+            <option value="70" {% if pricerate==70 %}selected{% endif %}>70 บาท</option>
+            <option value="90" {% if pricerate==90 %}selected{% endif %}>90 บาท</option>
+        </select>
+        <button type="submit" name="action" value="set_pricerate">ตกลง</button>
+    </form>
 
-        <p>วันที่: {{ draw_date or "ไม่เลือกงวด" }}</p>
-        <p>อัตราจ่าย: {{ pricerate }} บาท</p>
-        <p>ประเภทแทง: {{ bet_type }}</p>
-
-        <!-- ตารางแสดงบิล -->
-        {% if bills %}
-        <table>
-            <tr><th>เลข</th><th>บน</th><th>ล่าง</th></tr>
-            {% for bill in bills %}
-            <tr>
-                <td>{{ bill.number }}</td>
-                <td>{{ bill.top }}</td>
-                <td>{{ bill.bottom }}</td>
-            </tr>
+    <!-- เลือกประเภทแทง -->
+    <form method="POST">
+        <label>เลือกประเภทแทง:</label>
+        <select name="bet_type">
+            {% for bt in ["2 ตัว", "3 ตัว", "6 กลับ", "วิ่ง", "รูด", "19 ประตู"] %}
+                <option value="{{ bt }}" {% if bet_type == bt %}selected{% endif %}>{{ bt }}</option>
             {% endfor %}
-        </table>
-        <p><strong>ยอดรวม:</strong> {{ total_amount }}</p>
-        {% else %}
-        <p>ยังไม่มีบิล</p>
-        {% endif %}
+        </select>
+        <button type="submit" name="action" value="set_bet_type">ตกลง</button>
+    </form>
 
-        <!-- TODO: ปุ่มใส่บิล, ล้างตาราง -->
-    </div>
+    <!-- กรอกเลข -->
+    <form method="POST">
+        <label>กรอกเลข:</label>
+        <input type="text" name="numbers_input" required>
+        <button type="submit" name="action" value="add_number">ตัดเลข</button>
+    </form>
+    <p>เลขที่แยก: {{ numbers|join(", ") }}</p>
+
+    <!-- ราคา -->
+    <form method="POST">
+        <label>ราคาบน:</label>
+        <input type="number" name="price_top" value="0" required>
+        <label>ล่าง:</label>
+        <input type="number" name="price_bottom" value="0" required>
+        <label>โต๊ด:</label>
+        <input type="number" name="price_tod" value="0" required>
+        <button type="submit" name="action" value="add_bill">เพิ่มบิล</button>
+    </form>
+
+    <!-- ตารางบิล -->
+    {% if bills %}
+    <table>
+        <tr><th>#</th><th>เลข</th><th>บน</th><th>ล่าง</th><th>โต๊ด</th></tr>
+        {% for bill in bills %}
+        <tr>
+            <td>{{ bill.idx }}</td>
+            <td>{{ bill.number }}</td>
+            <td>{{ bill.top }}</td>
+            <td>{{ bill.bottom }}</td>
+            <td>{{ bill.tod }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <!-- บันทึก + ยอด -->
+    <form method="POST">
+        <label>บันทึกช่วยจำ:</label>
+        <input type="text" name="memo" value="{{ memo }}">
+        <p><strong>ยอดรวม:</strong> {{ total_amount }}</p>
+    </form>
+
+    <!-- ปุ่มล้าง/บันทึก -->
+    <form method="POST">
+        <button type="submit" name="action" value="clear_input">🧹 ล้างตาราง</button>
+        <button type="submit" name="action" value="save_all">📅 บันทึกโพย</button>
+    </form>
+</div>
 </body>
 </html>
