@@ -1,38 +1,48 @@
-# ✅ ฟังก์ชันช่วยสำหรับระบบโพยหวย
+# utils.py
 
-def split_numbers(text, step=2):
+def split_numbers(raw_input, step):
     """
-    ตัดเลขจากข้อความทุก step หลัก เช่น 2 ตัว, 3 ตัว
+    ตัดตัวเลขจากข้อความ เช่น "123456" → ["12", "34", "56"] ถ้า step=2
     """
-    cleaned = ''.join(c for c in text if c.isdigit())
-    numbers = []
-    for i in range(0, len(cleaned), step):
-        part = cleaned[i:i+step]
-        if len(part) == step:
-            numbers.append(part)
-    return numbers
+    clean = ''.join(filter(str.isdigit, raw_input))
+    return [clean[i:i+step] for i in range(0, len(clean), step) if len(clean[i:i+step]) == step]
 
 
 def generate_double_numbers(digits=2):
     """
-    สร้างเลขเบิ้ล/ตอง เช่น 11, 22 หรือ 111, 222
+    สร้างเลขเบิ้ล: digits=2 → 00-99 แบบเบิ้ล เช่น 11, 22 ...
+    digits=3 → 2ตัวเหมือน + 1 ต่าง เช่น 112, 121, 211
     """
-    return [str(i)*digits for i in range(10)]
+    if digits == 2:
+        return [f"{i}{i}" for i in range(10)]
+    elif digits == 3:
+        results = []
+        for i in range(10):
+            for j in range(10):
+                if i != j:
+                    results.append(f"{i}{i}{j}")
+                    results.append(f"{i}{j}{i}")
+                    results.append(f"{j}{i}{i}")
+        return sorted(set(results))
+    return []
+
+
+def generate_triple_numbers():
+    """
+    สร้างเลขตอง: 000, 111, ... 999
+    """
+    return [f"{i}{i}{i}" for i in range(10)]
 
 
 def generate_6_glub(number):
     """
-    รับเลข 3 หลัก แล้วคืนค่าเลขที่สลับได้ทั้งหมด (6 กลับ)
+    รับเลข 3 หลัก เช่น 123 → คืน permutation 6 แบบ
     """
-    if len(number) != 3:
-        return [number]
-    return sorted(set(
-        ["".join(p) for p in __import__('itertools').permutations(number)]
-    ))
-
-
-def format_currency(amount):
-    """
-    แปลงจำนวนเงินเป็นรูปแบบ 1,000 บาท
-    """
-    return f"{amount:,.0f} บาท"
+    if len(number) != 3 or not number.isdigit():
+        return []
+    perms = set()
+    digits = list(number)
+    from itertools import permutations
+    for p in permutations(digits):
+        perms.add(''.join(p))
+    return list(perms)
