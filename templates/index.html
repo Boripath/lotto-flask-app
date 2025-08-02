@@ -1,53 +1,43 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-    <title>ระบบโพยหวยออนไลน์</title>
+    <meta charset="UTF-8">
+    <title>โพยหวยออนไลน์</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
 </head>
 <body>
-    <h1>ระบบโพยหวยออนไลน์</h1>
+    <div class="container">
+        <h1>🇹🇭 โพยหวยออนไลน์</h1>
 
-    <form method="POST">
-        <input type="text" name="number" placeholder="เลขที่ซื้อ" required>
-        <input type="number" name="price" placeholder="ราคา" min="1" required>
-        <button type="submit">เพิ่มบิล</button>
-    </form>
+        <!-- โซนเดรือนาเหยักบาน
+draw_date, pricerate, bet_type, numbers, bills, memo, total_amount ได้จาก app.py ส่ง-->
 
-    <h2>บิลทั้งหมด</h2>
-    {% if bills %}
+        <!-- TODO: แสดง input form, ตารางบิล, บันทึก -->
+
+        <p>วันที่: {{ draw_date or "ไม่เลือกงวด" }}</p>
+        <p>อัตราจ่าย: {{ pricerate }} บาท</p>
+        <p>ประเภทแทง: {{ bet_type }}</p>
+
+        <!-- ตารางแสดงบิล -->
+        {% if bills %}
         <table>
-            <tr><th>เลข</th><th>ราคา</th></tr>
+            <tr><th>เลข</th><th>บน</th><th>ล่าง</th></tr>
             {% for bill in bills %}
-            <tr><td>{{ bill.number }}</td><td>{{ bill.price }}</td></tr>
+            <tr>
+                <td>{{ bill.number }}</td>
+                <td>{{ bill.top }}</td>
+                <td>{{ bill.bottom }}</td>
+            </tr>
             {% endfor %}
         </table>
-        <p>รวมทั้งหมด: {{ bills | sum(attribute='price') }} บาท</p>
-        <a href="{{ url_for('save') }}">📥 บันทึกโพย</a>
-        <a href="{{ url_for('clear') }}">🧹 ล้างทั้งหมด</a>
-    {% else %}
+        <p><strong>ยอดรวม:</strong> {{ total_amount }}</p>
+        {% else %}
         <p>ยังไม่มีบิล</p>
-    {% endif %}
+        {% endif %}
 
-    <h2>📊 สรุปยอดซื้อแต่ละเลข</h2>
-    {% if summary %}
-    <table>
-        <tr><th>เลข</th><th>รวมยอดซื้อ (บาท)</th><th>สถานะ</th></tr>
-        {% for number, total in summary.items() %}
-        <tr>
-            <td>{{ number }}</td>
-            <td>{{ total }}</td>
-            <td>
-                {% if number in over_limit %}
-                    <span class="danger">⚠️ เกินเพดาน ({{ limit }} บาท)</span>
-                {% else %}
-                    ✅ ปกติ
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-        <p>ยังไม่มีข้อมูลยอดซื้อ</p>
-    {% endif %}
+        <!-- TODO: ปุ่มใส่บิล, ล้างตาราง -->
+    </div>
 </body>
 </html>
