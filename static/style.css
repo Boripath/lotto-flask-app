@@ -20,3 +20,8 @@ table, th, td {
     padding: 8px;
     text-align: center;
 }
+
+.danger {
+    color: red;
+    font-weight: bold;
+}
