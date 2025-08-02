@@ -7,60 +7,47 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<div class="container">
+<div class="lotto-container">
     {{ header_html|safe }}
 
-    <!-- เลือกงวด -->
-    <form method="POST">
-        <label>เลือกงวด:</label>
-        <input type="date" name="draw_date" required>
-        <button type="submit" name="action" value="select_draw">ตกลง</button>
-    </form>
-
-    <!-- เลือกอัตราจ่าย -->
-    <form method="POST">
-        <label>เลือกอัตราจ่าย:</label>
+    <form method="POST" class="form-inline">
+        <label>อัตราจ่าย:</label>
         <select name="pricerate">
             <option value="70" {% if pricerate==70 %}selected{% endif %}>70 บาท</option>
             <option value="90" {% if pricerate==90 %}selected{% endif %}>90 บาท</option>
         </select>
-        <button type="submit" name="action" value="set_pricerate">ตกลง</button>
+        <button type="submit" name="action" value="set_pricerate">OK</button>
     </form>
 
-    <!-- เลือกประเภทแทง -->
-    <form method="POST">
-        <label>เลือกประเภทแทง:</label>
-        <select name="bet_type">
-            {% for bt in ["2 ตัว", "3 ตัว", "6 กลับ", "วิ่ง", "รูด", "19 ประตู"] %}
-                <option value="{{ bt }}" {% if bet_type == bt %}selected{% endif %}>{{ bt }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit" name="action" value="set_bet_type">ตกลง</button>
-    </form>
+    <div class="bet-type-buttons">
+        {% for bt in ["2 ตัว", "3 ตัว", "6 กลับ", "วิ่ง", "รูด", "19 ประตู"] %}
+            <form method="POST" style="display:inline;">
+                <input type="hidden" name="bet_type" value="{{ bt }}">
+                <button type="submit" name="action" value="set_bet_type" class="btn-type">{{ bt }}</button>
+            </form>
+        {% endfor %}
+    </div>
 
-    <!-- กรอกเลข -->
-    <form method="POST">
-        <label>กรอกเลข:</label>
+    <form method="POST" class="form-grid">
+        <label>ไส่เลข:</label>
         <input type="text" name="numbers_input" required>
-        <button type="submit" name="action" value="add_number">ตัดเลข</button>
-    </form>
-    <p>เลขที่แยก: {{ numbers|join(", ") }}</p>
-
-    <!-- ราคา -->
-    <form method="POST">
-        <label>ราคาบน:</label>
-        <input type="number" name="price_top" value="0" required>
-        <label>ล่าง:</label>
-        <input type="number" name="price_bottom" value="0" required>
-        <label>โต๊ด:</label>
-        <input type="number" name="price_tod" value="0" required>
-        <button type="submit" name="action" value="add_bill">เพิ่มบิล</button>
+        <button type="submit" name="action" value="add_number" class="btn-blue">+ ไส่เลข</button>
     </form>
 
-    <!-- ตารางบิล -->
+    <p class="numbers-display">เลขที่แยก: {{ numbers|join(" ") }}</p>
+
+    <form method="POST" class="form-grid">
+        <label>ใส่ราคา</label>
+        <input type="number" name="price_top" value="{{ price_top }}" placeholder="บน">
+        <input type="number" name="price_bottom" value="{{ price_bottom }}" placeholder="ล่าง">
+        <input type="number" name="price_tod" value="{{ price_tod }}" placeholder="โต๊ด">
+        <button type="submit" name="action" value="add_bill" class="btn-blue">เพิ่มบิล</button>
+    </form>
+
     {% if bills %}
-    <table>
-        <tr><th>#</th><th>เลข</th><th>บน</th><th>ล่าง</th><th>โต๊ด</th></tr>
+    <table class="bill-table">
+        <thead><tr><th>#</th><th>เลข</th><th>บน</th><th>ล่าง</th><th>โต๊ด</th><th></th></tr></thead>
+        <tbody>
         {% for bill in bills %}
         <tr>
             <td>{{ bill.idx }}</td>
@@ -68,22 +55,29 @@
             <td>{{ bill.top }}</td>
             <td>{{ bill.bottom }}</td>
             <td>{{ bill.tod }}</td>
+            <td>
+                <form method="POST" style="display:inline;">
+                    <input type="hidden" name="bill_idx" value="{{ bill.idx }}">
+                    <button type="submit" name="action" value="delete_bill">🗘️</button>
+                </form>
+            </td>
         </tr>
         {% endfor %}
+        </tbody>
     </table>
     {% endif %}
 
-    <!-- บันทึก + ยอด -->
-    <form method="POST">
+    <form method="POST" class="form-grid">
         <label>บันทึกช่วยจำ:</label>
         <input type="text" name="memo" value="{{ memo }}">
-        <p><strong>ยอดรวม:</strong> {{ total_amount }}</p>
+        <button type="submit" name="action" value="set_memo">OK</button>
     </form>
 
-    <!-- ปุ่มล้าง/บันทึก -->
-    <form method="POST">
-        <button type="submit" name="action" value="clear_input">🧹 ล้างตาราง</button>
-        <button type="submit" name="action" value="save_all">📅 บันทึกโพย</button>
+    <div class="total-display">ยอดรวม: {{ total_amount }}</div>
+
+    <form method="POST" class="form-buttons">
+        <button type="submit" name="action" value="clear_input" class="btn-red">🧹 ล้างตาราง</button>
+        <button type="submit" name="action" value="save_all" class="btn-green">📅 บันทึกโพย</button>
     </form>
 </div>
 </body>
