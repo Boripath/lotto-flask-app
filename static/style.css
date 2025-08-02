@@ -1,32 +1,103 @@
 /* static/style.css */
 body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    background-color: #f9f9f9;
-    color: #333;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
 }
 
-.container {
+.lotto-container {
     max-width: 800px;
-    margin: auto;
+    margin: 30px auto;
     background: #fff;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-table {
+form {
+    margin-bottom: 15px;
+}
+
+label {
+    font-weight: bold;
+    margin-right: 8px;
+}
+
+input[type="text"], input[type="number"], select {
+    padding: 8px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-type {
+    background-color: #e7f3ff;
+    color: #007bff;
+    margin: 3px;
+}
+
+.btn-blue {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.btn-red {
+    background-color: #dc3545;
+    color: #fff;
+    margin-right: 10px;
+}
+
+.btn-green {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.bet-type-buttons {
+    margin-bottom: 10px;
+}
+
+.numbers-display {
+    background: #eef;
+    padding: 8px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.bill-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
-table, th, td {
+.bill-table th, .bill-table td {
     border: 1px solid #ccc;
-    padding: 10px;
+    padding: 8px;
     text-align: center;
 }
 
-th {
-    background-color: #eee;
+.bill-table th {
+    background-color: #f0f8ff;
+}
+
+.total-display {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 15px;
+    color: #333;
+}
+
+.form-buttons {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
 }
