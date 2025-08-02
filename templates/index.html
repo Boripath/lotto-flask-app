@@ -84,8 +84,8 @@
 
     <form method="POST" class="form-grid">
         <label>บันทึกช่วยจำ:</label>
-        <input type="text" name="memo" value="{{ memo }}">
-        <button type="submit" name="action" value="set_memo">OK</button>
+        <input type="text" name="memo" value="{{ memo }}" onchange="this.form.submit()">
+        <input type="hidden" name="action" value="set_memo">
     </form>
 
     <div class="total-display">ยอดรวม: {{ total_amount }}</div>
