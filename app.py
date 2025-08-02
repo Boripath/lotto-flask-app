@@ -49,7 +49,7 @@ def clear():
 @app.route("/save")
 def save():
     global bills
-    save_to_csv(bills)
+    save_to_google_sheet(bills)  # เปลี่ยนจาก save_to_csv
     bills = []
     return redirect(url_for('index'))
 
