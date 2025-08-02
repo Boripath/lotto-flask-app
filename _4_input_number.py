@@ -2,10 +2,14 @@
 from flask import session
 from utils import split_numbers, generate_double_numbers, generate_6_glub, generate_triple_numbers
 
+# คืนค่าเลขที่แสดง + สถานะเบิ้ล
+
 def get_number_input():
     numbers = session.get("numbers", [])
     double_mode = session.get("double_mode", False)
     return numbers, double_mode
+
+# กรอกเลข + ตัดเลขอัตโนมัติ พร้อมรองรับ 6 กลับ และตอง
 
 def process_number_input(raw_input):
     bet_type = session.get("bet_type", "2 ตัว")
@@ -39,11 +43,15 @@ def process_number_input(raw_input):
 
     session["numbers"] = numbers
 
+# ลบเลขตาม index
+
 def delete_number(idx):
     numbers = session.get("numbers", [])
     if 0 <= idx < len(numbers):
         numbers.pop(idx)
         session["numbers"] = numbers
+
+# toggle เบิ้ล/ตอง
 
 def toggle_double():
     session["double_mode"] = not session.get("double_mode", False)
