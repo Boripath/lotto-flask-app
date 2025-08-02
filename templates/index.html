@@ -44,21 +44,17 @@
         <button type="submit" name="action" value="add_number" class="btn-blue">+ ใส่เลข</button>
     </form>
 
-    <p class="numbers-display">เลขที่แยก: {{ numbers|join(" ") }}</p>
+    <p class="numbers-display">เลขที่แทง: {{ numbers|join(" ") }}</p>
 
     <!-- ใส่ราคา ตามประเภท -->
     <form method="POST" class="form-grid">
         <label>ใส่ราคา</label>
         {% if bet_type == "2 ตัว" %}
-            <input type="number" name="price_top" value="{{ price_top }}" placeholder="บน">
-            <input type="number" name="price_bottom" value="{{ price_bottom }}" placeholder="ล่าง">
-        {% elif bet_type == "3 ตัว" %}
-            <input type="number" name="price_top" value="{{ price_top }}" placeholder="ตรง">
-            <input type="number" name="price_tod" value="{{ price_tod }}" placeholder="โต๊ด">
-        {% else %}
-            <input type="number" name="price_top" value="{{ price_top }}" placeholder="บน">
-            <input type="number" name="price_bottom" value="{{ price_bottom }}" placeholder="ล่าง">
-            <input type="number" name="price_tod" value="{{ price_tod }}" placeholder="โต๊ด">
+            <input type="number" name="price_top" ... placeholder="บน">
+            <input type="number" name="price_bottom" ... placeholder="ล่าง">
+        {% elif bet_type == "3 ตัว" or bet_type == "6 กลับ" %}
+            <input type="number" name="price_top" ... placeholder="ตรง">
+            <input type="number" name="price_tod" ... placeholder="โต๊ด">
         {% endif %}
         <button type="submit" name="action" value="add_bill" class="btn-blue">เพิ่มบิล</button>
     </form>
