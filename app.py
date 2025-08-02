@@ -8,7 +8,7 @@ from _0_select_draw import select_draw_date
 from _1_header import render_header
 from _2_pricerate import get_pricerate
 from _3_bet_type import get_bet_type
-from _4_input_number import process_numbers_input
+from _4_input_number import process_number_input
 from _5_input_price import process_price_input
 from _6_bill_table import get_bill_table_data
 from _7_note import get_memo_and_total
