@@ -1,8 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for
 from save import save_to_google_sheet  # เปลี่ยนจาก save_to_csv
 import os
+from datetime import datetime
+from flask import Flask, render_template, request, redirect, url_for, session
+import os
 
 app = Flask(__name__)
+app.secret_key = "your_secret_key"  # ต้องมี เพื่อใช้ session
+
 
 bills = []
 MAX_PER_NUMBER = 500  # ✅ เพดานรับซื้อแต่ละเลข (บาท)
@@ -28,13 +33,15 @@ def get_over_limit(summary, limit):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    global bills
     if request.method == "POST":
-        number = request.form.get("number")
-        price = request.form.get("price")
-        if number and price:
-            bills.append({"number": number, "price": float(price)})
+        selected_date = request.form.get("draw_date")
+        if selected_date:
+            session["draw_date"] = selected_date
         return redirect(url_for('index'))
+
+    draw_date = session.get("draw_date", datetime.today().strftime("%Y-%m-%d"))
+    return render_template("index.html", draw_date=draw_date)
+
 
     summary = get_summary(bills)
     over_limit = get_over_limit(summary, MAX_PER_NUMBER)
