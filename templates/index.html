@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ระบบโพยหวยออนไลน์</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>ระบบโพยหวยออนไลน์</h1>
+
+    <form method="POST">
+        <input type="text" name="number" placeholder="เลขที่ซื้อ" required>
+        <input type="number" name="price" placeholder="ราคา" min="1" required>
+        <button type="submit">เพิ่มบิล</button>
+    </form>
+
+    <h2>บิลทั้งหมด</h2>
+    {% if bills %}
+        <table>
+            <tr><th>เลข</th><th>ราคา</th></tr>
+            {% for bill in bills %}
+            <tr><td>{{ bill.number }}</td><td>{{ bill.price }}</td></tr>
+            {% endfor %}
+        </table>
+        <p>รวมทั้งหมด: {{ bills | sum(attribute='price') }} บาท</p>
+        <a href="{{ url_for('save') }}">📥 บันทึกโพย</a>
+        <a href="{{ url_for('clear') }}">🧹 ล้างทั้งหมด</a>
+    {% else %}
+        <p>ยังไม่มีบิล</p>
+    {% endif %}
+</body>
+</html>
