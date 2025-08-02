@@ -7,10 +7,11 @@ from session_state import add_bill
 # ✅ คืนค่าราคาใน session
 
 def get_price_inputs():
-    top = session.get("price_top", 0)
-    bottom = session.get("price_bottom", 0)
-    tod = session.get("price_tod", 0)
-    return top, bottom, tod
+    return (
+        float(session.get("price_top", 0)),
+        float(session.get("price_bottom", 0)),
+        float(session.get("price_tod", 0))
+    )
 
 # ✅ เซตค่าราคา
 
