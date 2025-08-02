@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "lotto-sheet-api",
+  "private_key_id": "57d43a790c7ec17141edb8f7f83105edd38d68f7",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDTeVB6/RW6B/L0\nfHiBilKOBvwGb6n48FRmcovwucn7PkFvb9jpBrqoTnCvskjlaDWWRwj4g2Sfe/Hs\nSZBYceBY2N6nwRqC+/QuZraYE40hYVy1/ZGbFQ7OdXRq2xGiiIkq9id7rVo4XkhG\n6C08j7z/WIrtHz0ssTRwAsmtQXM7KBjevYnUz6wjoGOYVD1bHQf2E/NfgoDPYMCq\nY/rxzlC6GBC6PtSX9PXVjU0K1zBY7+f+ZGfwJpp33Si+8F0+1L8NStXw1wzSZF+d\nYcpybO8yVgF1RrN1yjlBDH5aEoYLedzyejnMYxY25b2rAFlyXWiM8Zss+arMr1Ry\nqJI0b0phAgMBAAECggEAFVy0nsvokTOC3SQitzE+ICc/97V5ddJvMC8jiER4TRcv\nnH5vqrB5lA1icDkiCHyDp0PTOelp9Xtbh5sxx+FvAIKd0VPeJfumIbbR/KBC+it/\n5klwVzpkFcKDKVUqXaENvCeD+wgarEWH5xPGmA7MEH5FAGmOsDBRY/xAG66YIZI/\nFbZUUgBV+nv5VHzBc+7Rp8vjAVOPSKhRA1G9dPOJMwi3MGQKLvJR2NM062lX9+H+\nAZJnab5PzkF7EXvW/6x4NDFJhTPv51V4xqe1Mp2KCDr/BwNDkZUjs56JieIe45/S\nn8tOzTjIq54eDYAVHGYjh25v3Y0D9fWo6/4J3ySFLQKBgQDuBxhZTndSEsdMAO90\nkaGaBO6FA5hhwFWunihhoexSOpAg2AF+b/+OXa7W9WBNOdqstjh2EjcUB0qGCU3O\nFeq9S4vyjhBm5X+NSkIlFe/SVVrXrvkYIPm9jj4O2i8kn2DJ4lmYQx50EtHP7ysL\numBGOuFM/f8Wk49wC6mDpo7PpQKBgQDjcPPowGakEPw2BBH8c5ZW/zrXmUouXQaK\nI7bu8oQl0nNnm/f/7xN3wwBQ/tem5R6JK0Aj8Bn7aVwNFI1cB2YU8yfWhN/MYZBQ\nvTuNLjY58RQOYwSu3/edeceEbq8UXUUPjxTI62+yGv+wOcsDZavzZwOZysC1xQjt\nYJuV47eTDQKBgQCCsjCjcNtBnIAD8ouI1SIHoOea77NvER266KrBmRhauj9DWXfQ\nhgyrjjMfYtJC9R5mMRPlePD3NV2tJVSscQpYcC/iujC1XxRfb0PMezQYqLddsHyj\nzA91DrJyk0jJch3CHGAXo9sH3wGHjAp1wRt11IS7MsgrDFD5M94bJIxL5QKBgAeK\njjvQbVbRTVuJJQOG3ZxC2DOf3IrPANGBv6YKmoEaikMMM9vjlHSrHY6R9JqPDEUm\nDvliE6p3Ytr4LHu5rxPQwChnvXfsYDmdHKVgu+GN8clMVTJrMK2jBQ+KD/oP4aNT\nbi//RnPUW1f/gpC5RUtLxh3KUDt2rgYY5u/AXizdAoGAdUgxbnVdb7M1pT1fTf9p\nHJrvGoMZ2wsGaFfsvpwP8181Ze1H4u1lZxjolNfbbg6yVOv4Pg6LOBXzswtvyE8C\nP0vogmfkVqnC21DM1YDrijgND9sJdwZK9was0q+qa6X6ahyndLFo1HpeN6JfTjW6\ndm81XN4aZ2ir4isZu7WDvyw=\n-----END PRIVATE KEY-----\n",
+  "client_email": "lotto-sheet-service@lotto-sheet-api.iam.gserviceaccount.com",
+  "client_id": "102475083030253670528",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/lotto-sheet-service%40lotto-sheet-api.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
