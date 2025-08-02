@@ -6,13 +6,17 @@ from datetime import datetime
 SHEET_NAME = "LottoBills"
 WORKSHEET_NAME = "โพย"
 
-# เชื่อมต่อ Google Sheet
+# เชื่อมต่อ Google Sheet ด้วย Scope ครบ (Sheets + Drive)
 def connect_gsheet():
-    scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"  # ✅ เพิ่ม scope Drive
+    ]
     credentials = Credentials.from_service_account_file("credentials.json", scopes=scopes)
     client = gspread.authorize(credentials)
     sheet = client.open(SHEET_NAME)
     return sheet
+
 
 # บันทึกโพยลง Google Sheet
 def save_to_google_sheet(bills):
