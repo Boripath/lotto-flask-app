@@ -7,7 +7,7 @@
 </head>
 <body>
 <div class="lotto-container">
-    {{ header_html|safe }}
+    <!-- ✅ ลบหัวข้อด้านบนออกแล้ว -->
 
     <!-- ✅ เลือกชนิดหวย -->
     <form method="POST" class="form-grid">
@@ -20,9 +20,17 @@
         <input type="hidden" name="action" value="set_lottery_type">
     </form>
 
-    <!-- ✅ งวดและ countdown -->
+    <!-- ✅ งวด + countdown + ธงชาติ -->
     <div class="draw-info-box">
-        <b>{{ draw_info }}</b> | <span id="countdown" style="color:red;">{{ countdown }}</span>
+        {% if session.lottery_type == "หวยรัฐบาลไทย" %}
+            <img src="https://flagcdn.com/th.svg" width="25" style="margin-right:6px;">
+        {% elif session.lottery_type == "หวยลาวพัฒนา (จ,พ,ศ)" %}
+            <img src="https://flagcdn.com/la.svg" width="25" style="margin-right:6px;">
+        {% elif "หวยฮานอย" in session.lottery_type %}
+            <img src="https://flagcdn.com/vn.svg" width="25" style="margin-right:6px;">
+        {% endif %}
+        <b>{{ draw_info }}</b> |
+        <span id="countdown" style="color:red;">{{ countdown }}</span>
     </div>
 
     <!-- ✅ อัตราจ่าย -->
@@ -45,7 +53,7 @@
         <input type="hidden" name="action" value="set_bet_type">
     </form>
 
-    <!-- ✅ ปุ่มใส่เลขเบิ้ล/ตอง -->
+    <!-- ✅ ใส่เลขเบิ้ล/ตอง -->
     <form method="POST" class="disable-on-close">
         <button class="btn-type {% if double_mode %}selected{% endif %}" type="submit" name="action" value="toggle_double">ใส่เลขเบิ้ล/ตอง</button>
     </form>
@@ -57,7 +65,7 @@
         <button type="submit" name="action" value="add_number">เพิ่มเลข</button>
     </form>
 
-    <!-- ✅ แสดงเลขที่แทง -->
+    <!-- ✅ เลขที่แทง -->
     <div class="number-buttons">
         {% for num in numbers %}
         <form method="POST" style="display:inline;" class="disable-on-close">
