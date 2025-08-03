@@ -81,7 +81,7 @@ def index():
         return redirect(url_for("index"))
 
     # ✅ ดึงข้อมูลแสดงผลหน้าเว็บ
-    draw_info, countdown, lottery_type = select_draw_date()
+    draw_info, countdown_str, countdown_seconds, allow_bet = select_draw_date_and_countdown()
     header_html = render_header(draw_info, countdown)
     pricerate = get_pricerate()
     bet_type = get_bet_type()
@@ -94,7 +94,9 @@ def index():
     return render_template("index.html",
                            header_html=header_html,
                            draw_info=draw_info,
-                           countdown=countdown,
+                           countdown=countdown_str,
+                           countdown_seconds=countdown_seconds,
+                           allow_bet=allow_bet,
                            lottery_type=lottery_type,
                            pricerate=pricerate,
                            bet_type=bet_type,
