@@ -1,6 +1,6 @@
 import gspread
 from google.oauth2.service_account import Credentials
-from gspread_formatting import CellFormat, Color, format_cell_range, clear_format
+from gspread_formatting import CellFormat, Color, format_cell_range
 from datetime import datetime
 
 # ✅ Google Sheet config
@@ -30,6 +30,9 @@ def update_summary_from_all_bills():
 
     # ✅ ดึงข้อมูลจาก All_Bills (skip header)
     all_data = ws_all.get_all_values()
+    if len(all_data) <= 1:
+        return  # ไม่มีข้อมูลใหม่
+
     header = all_data[0]
     data_rows = all_data[1:]
 
@@ -57,7 +60,7 @@ def update_summary_from_all_bills():
         summary[number]["trong"] += trong
         summary[number]["tod"] += tod
 
-    # ✅ สร้าง rows เรียงเลขน้อย → มาก
+    # ✅ สร้าง rows เรียงเลขจากน้อย → มาก
     sorted_numbers = sorted(summary.keys(), key=lambda x: int(x))
     rows_sum = [["เลข", "รวม บน", "รวม ล่าง", "รวม ตรง", "รวม โต๊ด"]]
 
@@ -71,12 +74,13 @@ def update_summary_from_all_bills():
             data["tod"]
         ])
 
-    # ✅ ล้างข้อมูลเก่า + เขียนข้อมูลใหม่ลง Summary_By_Number
+    # ✅ ล้างข้อมูลเก่า + เขียนใหม่ใน Summary_By_Number
     ws_sum.clear()
     ws_sum.update("A1", rows_sum)
 
-    # ✅ ล้างสีเดิมก่อน
-    clear_format(ws_sum, "A2:E1000")
+    # ✅ ล้างสีพื้นหลังด้วยสีขาว (แทน clear_format)
+    white_bg = CellFormat(backgroundColor=Color(1, 1, 1))
+    format_cell_range(ws_sum, "A2:E1000", white_bg)
 
     # ✅ ใส่พื้นหลังสีแดงอ่อนถ้าเกิน threshold
     red_bg = Color(1, 0.8, 0.8)
@@ -99,7 +103,7 @@ def update_summary_from_all_bills():
             red_cells.append(f"E{i}")
             apply_red = True
         if apply_red:
-            red_cells.append(f"A{i}")  # เลขต้องแดงด้วย
+            red_cells.append(f"A{i}")  # เน้นช่องเลขด้วย
 
         for cell in red_cells:
             format_cell_range(ws_sum, cell, CellFormat(backgroundColor=red_bg))
