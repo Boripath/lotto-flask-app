@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from datetime import datetime
 import os
 
-# Import โมดูลใช้งานในระบบโพยหวย
 import session_state
 from _0_select_draw import select_draw_date
 from _1_header import render_header
@@ -53,11 +52,11 @@ def index():
         elif action == "delete_bill":
             bill_idx = int(request.form.get("bill_idx", -1))
             session_state.delete_bill(bill_idx)
-        
+
         elif action == "edit_bill":
             bill_idx = int(request.form.get("bill_idx", -1))
             session_state.edit_bill(bill_idx)
-   
+
         elif action == "save_all":
             save_to_google_sheet(session_state.get_bills())
             clear_all_data()
@@ -75,7 +74,6 @@ def index():
 
         return redirect(url_for("index"))
 
-    # ดึงข้อมูลทั้งหมดมาแสดง
     draw_date, countdown = select_draw_date()
     header_html = render_header(draw_date, countdown)
     pricerate = get_pricerate()
