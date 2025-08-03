@@ -20,7 +20,7 @@ def get_bill_table_data():
             "top": top,
             "bottom": bottom,
             "tod": tod,
-            "numbers": " ".join(numbers)
+            "numbers": numbers  # ✅ เป็น list เพื่อแสดงปุ่มลบ
         })
 
     return table_rows
@@ -39,39 +39,55 @@ def render_bill_html():
     html_parts = []
 
     for row in rows:
+        bet_type = row["type"]
         top = int(row["top"])
         bottom = int(row["bottom"])
         tod = int(row["tod"])
 
-        if row["type"] == "2 ตัว":
+        # ✅ ป้ายประเภทและราคา
+        if bet_type == "2 ตัว":
+            label = "บน x ล่าง"
             price_text = f"{top} x {bottom}"
-            price_label = "บน x ล่าง"
         else:
+            label = "ตรง x โต๊ด"
             price_text = f"{top} x {tod}"
-            price_label = "ตรง x โต๊ด"
 
+        # ✅ แสดงเลขเป็นปุ่มกดลบทีละตัว
+        number_buttons = " ".join([
+            f"<form method='POST' style='display:inline;'>"
+            f"<input type='hidden' name='number_to_delete' value='{num}'>"
+            f"<button type='submit' name='action' value='delete_number' style='border:none; background:none; color:#007BFF; text-decoration:underline; cursor:pointer;'>{num}</button>"
+            f"</form>"
+            for num in row["numbers"]
+        ])
+
+        # ✅ ตาราง 3 แถว: ประเภท / เลข / ราคา + ปุ่ม
         html = f"""
         <table style='width:100%; border-collapse:collapse; margin-bottom:10px;'>
             <tr style='border:1px solid #ccc;'>
-                <td style='width:20%; text-align:center; vertical-align:middle; border:1px solid #ccc; padding:10px;'>
-                    <div style='color:#3498db; font-weight:bold;'>{row['type']}</div>
-                    <div style='color:#e74c3c;'>{price_label}</div>
+                <td style='width:20%; text-align:center; border:1px solid #ccc; padding:8px;'>
+                    <div style='color:#3498db; font-weight:bold;'>{bet_type}</div>
+                </td>
+                <td style='width:60%; text-align:left; border:1px solid #ccc; padding:8px;' rowspan='2'>
+                    {number_buttons}
+                </td>
+                <td style='width:10%; text-align:center; border:1px solid #ccc; padding:8px;' rowspan='2'>
+                    <form method='POST'>
+                        <input type='hidden' name='bill_idx' value='{row['idx']}'>
+                        <button type='submit' name='action' value='edit_bill' style='border:none; background:#fff; cursor:pointer;'>✏️</button>
+                    </form>
+                </td>
+                <td style='width:10%; text-align:center; border:1px solid #ccc; padding:8px;' rowspan='2'>
+                    <form method='POST'>
+                        <input type='hidden' name='bill_idx' value='{row['idx']}'>
+                        <button type='submit' name='action' value='delete_bill' style='border:none; background:#fff; cursor:pointer;'>🗑️</button>
+                    </form>
+                </td>
+            </tr>
+            <tr style='border:1px solid #ccc;'>
+                <td style='text-align:center; border:1px solid #ccc; padding:8px;'>
+                    <div style='color:#e74c3c;'>{label}</div>
                     <div style='color:#3498db;'>{price_text}</div>
-                </td>
-                <td style='width:60%; text-align:left; vertical-align:middle; border:1px solid #ccc; padding:10px;'>
-                    {row['numbers']}
-                </td>
-                <td style='width:10%; text-align:center; vertical-align:middle; border:1px solid #ccc;'>
-                    <form method='POST'>
-                        <input type='hidden' name='bill_idx' value='{row['idx']}'>
-                        <button type='submit' name='action' value='edit_bill' style='border:none; background-color:#fff; cursor:pointer;'>✏️</button>
-                    </form>
-                </td>
-                <td style='width:10%; text-align:center; vertical-align:middle; border:1px solid #ccc;'>
-                    <form method='POST'>
-                        <input type='hidden' name='bill_idx' value='{row['idx']}'>
-                        <button type='submit' name='action' value='delete_bill' style='border:none; background-color:#fff; cursor:pointer;'>🗑️</button>
-                    </form>
                 </td>
             </tr>
         </table>
