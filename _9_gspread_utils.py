@@ -23,7 +23,7 @@ def connect_sheet():
     client = gspread.authorize(creds)
     return client.open(SHEET_NAME)
 
-# ✅ ฟังก์ชันที่ 1: บันทึก All_Bills
+# ✅ ฟังก์ชันที่ 1: บันทึก All_Bills พร้อมหัวตารางภาษาไทย
 def save_all_bills_to_sheet(bills):
     if not bills:
         return
@@ -34,6 +34,7 @@ def save_all_bills_to_sheet(bills):
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     draw_date = session.get("draw_date", "")
     memo = session.get("memo", "")
+    lottery_type = "หวยรัฐบาลไทย"  # เพิ่มคอลัมน์ชนิดหวย
 
     rows = []
     for bill in bills:
@@ -45,13 +46,20 @@ def save_all_bills_to_sheet(bills):
 
         for number in numbers:
             if bet_type == "2 ตัว":
-                rows.append([ts, draw_date, bet_type, number, top, bottom, "", "", memo])
-            else:  # 3 ตัว / 6 กลับ
-                rows.append([ts, draw_date, bet_type, number, "", "", top, tod, memo])
+                rows.append([ts, lottery_type, draw_date, bet_type, number, top, bottom, "", "", memo])
+            else:
+                rows.append([ts, lottery_type, draw_date, bet_type, number, "", "", top, tod, memo])
+
+    # ✅ ถ้าไม่มีหัวตาราง ให้ใส่หัวตารางภาษาไทย
+    existing = ws_all.get_all_values()
+    if not existing:
+        header_row = ["Timestamp", "ชนิดหวย", "งวดวันที่", "ประเภท", "ตัวเลข",
+                      "บน", "ล่าง", "ตรง", "โต๊ด", "บันทึกช่วยจำ"]
+        ws_all.append_row(header_row)
 
     ws_all.append_rows(rows)
 
-# ✅ ฟังก์ชันที่ 2: สรุปยอดและแสดง 2 คอลัมน์ (เลข 2 ตัว + 3 ตัว)
+# ✅ ฟังก์ชันที่ 2: สรุปยอด Summary_By_Number แบบ 2 ฝั่ง
 def update_summary_from_all_bills():
     sheet = connect_sheet()
     ws_all = sheet.worksheet("All_Bills")
@@ -64,11 +72,11 @@ def update_summary_from_all_bills():
     header = all_data[0]
     data_rows = all_data[1:]
 
-    idx_number = header.index("Number")
-    idx_top = header.index("Top")
-    idx_bottom = header.index("Bottom")
-    idx_trong = header.index("Trong")
-    idx_tod = header.index("Tod")
+    idx_number = header.index("ตัวเลข")
+    idx_top = header.index("บน")
+    idx_bottom = header.index("ล่าง")
+    idx_trong = header.index("ตรง")
+    idx_tod = header.index("โต๊ด")
 
     # ✅ แยกเลข 2 ตัว / 3 ตัว
     summary_2digit = {}
@@ -130,7 +138,7 @@ def update_summary_from_all_bills():
     # ✅ ใส่สีแดงอ่อนถ้ายอดเกิน threshold
     red_bg = Color(1, 0.8, 0.8)
 
-    for i, row in enumerate(rows_sum[1:], start=2):  # เริ่มแถว 2
+    for i, row in enumerate(rows_sum[1:], start=2):
         red_cells = []
         num2, top, bottom = row[0], row[1], row[2]
         num3, trong, tod = row[4], row[5], row[6]
@@ -141,15 +149,15 @@ def update_summary_from_all_bills():
             if float(bottom) > THRESHOLD_BOTTOM:
                 red_cells.append(f"C{i}")
             if red_cells:
-                red_cells.append(f"A{i}")  # ช่องเลข 2 ตัว
+                red_cells.append(f"A{i}")
 
         if num3:
             if float(trong) > THRESHOLD_TRONG:
                 red_cells.append(f"F{i}")
             if float(tod) > THRESHOLD_TOD:
                 red_cells.append(f"G{i}")
-            if "F{i}" in red_cells or "G{i}" in red_cells:
-                red_cells.append(f"E{i}")  # ช่องเลข 3 ตัว
+            if any(c in red_cells for c in [f"F{i}", f"G{i}"]):
+                red_cells.append(f"E{i}")
 
         for cell in red_cells:
             format_cell_range(ws_sum, cell, CellFormat(backgroundColor=red_bg))
