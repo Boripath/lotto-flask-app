@@ -1,65 +1,73 @@
-# _9_gspread_utils.py
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
+from flask import session
 
-# ✅ เชื่อมต่อ Google Sheet
+# ✅ ชื่อไฟล์ Google Sheet และ Scope
 SHEET_NAME = "LottoBills"
 
-# ✅ เชื่อ Scope สอนุํม Sheets + Drive
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
 ]
 
-# ✅ เชื่อไฟล์ credentials.json ที่ถูกวางไว้ใน root
-
+# ✅ เชื่อมต่อ Google Sheet
 def connect_sheet():
     creds = Credentials.from_service_account_file("credentials.json", scopes=SCOPES)
     client = gspread.authorize(creds)
     sheet = client.open(SHEET_NAME)
     return sheet
 
-# ✅ บันทึกบิลไป Google Sheet (2 ชีท: โพย+รวม)
-
+# ✅ บันทึกบิลทั้งหมดลง 2 ชีท: All_Bills และ Summary_By_Number
 def save_to_google_sheet(bills):
     if not bills:
         return
 
     sheet = connect_sheet()
-    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ws_all = sheet.worksheet("All_Bills")
+    ws_sum = sheet.worksheet("Summary_By_Number")
 
-    # กรรมเป็น rows โพย
-    rows = []
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    draw_date = session.get("draw_date", "")
+    memo = session.get("memo", "")
+
+    # ✅ เตรียมข้อมูลสำหรับ All_Bills (แยกเลขเป็นแถว)
+    rows_all = []
     for bill in bills:
-        rows.append([
-            ts,
-            bill.get("draw_date", ""),
-            bill.get("type", ""),
-            bill.get("number", ""),
-            bill.get("top", 0),
-            bill.get("bottom", 0),
-            bill.get("tod", 0)
-        ])
+        bet_type = bill.get("type", "")
+        numbers = bill.get("numbers", [])
+        top = float(bill.get("top", 0))
+        bottom = float(bill.get("bottom", 0))
+        tod = float(bill.get("tod", 0))
 
-    # เขียน "Bills" และ append
-    ws1 = sheet.worksheet("Bills")
-    ws1.append_rows(rows)
+        for number in numbers:
+            if bet_type == "2 ตัว":
+                rows_all.append([timestamp, draw_date, bet_type, number, top, bottom, "", memo])
+            else:  # 3 ตัว / 6 กลับ
+                rows_all.append([timestamp, draw_date, bet_type, number, top, "", tod, memo])
 
-    # ✅ รวมยอดตามเลข
-    summary = {}
-    for bill in bills:
-        key = bill.get("number", "")
-        if key not in summary:
-            summary[key] = {"top": 0, "bottom": 0, "tod": 0}
-        summary[key]["top"] += bill.get("top", 0)
-        summary[key]["bottom"] += bill.get("bottom", 0)
-        summary[key]["tod"] += bill.get("tod", 0)
+    # ✅ เขียน All_Bills
+    ws_all.append_rows(rows_all)
 
-    sum_rows = []
-    for number, data in summary.items():
-        sum_rows.append([ts, number, data["top"], data["bottom"], data["tod"]])
+    # ✅ สรุปยอดรวมแต่ละเลข (รวมจากทุกราคา)
+    summary_dict = {}
+    for row in rows_all:
+        number = row[3]
+        top = float(row[4]) if row[4] else 0
+        bottom = float(row[5]) if row[5] else 0
+        tod = float(row[6]) if row[6] else 0
 
-    # เขียน "Summary" และ append
-    ws2 = sheet.worksheet("Summary")
-    ws2.append_rows(sum_rows)
+        if number not in summary_dict:
+            summary_dict[number] = {"top": 0, "bottom": 0, "tod": 0}
+
+        summary_dict[number]["top"] += top
+        summary_dict[number]["bottom"] += bottom
+        summary_dict[number]["tod"] += tod
+
+    # ✅ เตรียมข้อมูล Summary_By_Number
+    rows_sum = []
+    for number, data in summary_dict.items():
+        rows_sum.append([timestamp, number, data["top"], data["bottom"], data["tod"]])
+
+    # ✅ เขียน Summary_By_Number
+    ws_sum.append_rows(rows_sum)
