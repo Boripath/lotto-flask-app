@@ -7,35 +7,26 @@
 </head>
 <body>
 <div class="lotto-container">
+    {{ header_html|safe }}
 
-    <!-- ✅ เลือกชนิดหวย -->
-    <form method="POST">
+    <!-- เลือกชนิดหวย -->
+    <form method="POST" class="form-grid">
         <label>ชนิดหวย:</label>
-        <label class="radio-label">
-            <input type="radio" name="lottery_type" value="หวยรัฐบาลไทย" onchange="this.form.submit()" {% if lottery_type == 'หวยรัฐบาลไทย' %}checked{% endif %}> หวยรัฐบาลไทย
-        </label>
-        <label class="radio-label">
-            <input type="radio" name="lottery_type" value="หวยลาวพัฒนา" onchange="this.form.submit()" {% if lottery_type == 'หวยลาวพัฒนา' %}checked{% endif %}> หวยลาวพัฒนา (จ,พ,ศ)
-        </label>
-        <label class="radio-label">
-            <input type="radio" name="lottery_type" value="หวยฮานอย พิเศษ" onchange="this.form.submit()" {% if lottery_type == 'หวยฮานอย พิเศษ' %}checked{% endif %}> หวยฮานอย พิเศษ
-        </label>
-        <label class="radio-label">
-            <input type="radio" name="lottery_type" value="หวยฮานอย" onchange="this.form.submit()" {% if lottery_type == 'หวยฮานอย' %}checked{% endif %}> หวยฮานอย
-        </label>
-        <label class="radio-label">
-            <input type="radio" name="lottery_type" value="หวยฮานอย VIP" onchange="this.form.submit()" {% if lottery_type == 'หวยฮานอย VIP' %}checked{% endif %}> หวยฮานอย VIP
-        </label>
+        <select name="lottery_type" onchange="this.form.submit()">
+            {% for ltype in ["หวยรัฐบาลไทย", "หวยลาวพัฒนา (จ,พ,ศ)", "หวยฮานอย พิเศษ", "หวยฮานอย", "หวยฮานอย VIP"] %}
+                <option value="{{ ltype }}" {% if session.lottery_type == ltype %}selected{% endif %}>{{ ltype }}</option>
+            {% endfor %}
+        </select>
         <input type="hidden" name="action" value="set_lottery_type">
     </form>
 
-    <!-- ✅ แสดงงวดและ Countdown -->
+    <!-- แสดงงวดและ countdown -->
     <div class="draw-info-box">
-        <b>{{ draw_info }}</b> | <span style="color:red;">{{ countdown }}</span>
+        <b>{{ draw_info }}</b> | <span id="countdown" style="color:red;">{{ countdown }}</span>
     </div>
 
     <!-- อัตราจ่าย -->
-    <form method="POST">
+    <form method="POST" class="disable-on-close">
         <label>อัตราจ่าย:</label>
         <label class="radio-label">
             <input type="radio" name="pricerate" value="70" onchange="this.form.submit()" {% if pricerate == 70 %}checked{% endif %}>70
@@ -47,7 +38,7 @@
     </form>
 
     <!-- ประเภทการแทง -->
-    <form method="POST" class="bet-type-buttons">
+    <form method="POST" class="bet-type-buttons disable-on-close">
         {% for btype in ["2 ตัว", "3 ตัว", "6 กลับ"] %}
             <button class="btn-type {% if btype == bet_type %}selected{% endif %}" type="submit" name="bet_type" value="{{ btype }}">{{ btype }}</button>
         {% endfor %}
@@ -55,12 +46,12 @@
     </form>
 
     <!-- ปุ่มใส่เลขเบิ้ล/ตอง -->
-    <form method="POST">
+    <form method="POST" class="disable-on-close">
         <button class="btn-type {% if double_mode %}selected{% endif %}" type="submit" name="action" value="toggle_double">ใส่เลขเบิ้ล/ตอง</button>
     </form>
 
     <!-- กรอกเลข -->
-    <form method="POST">
+    <form method="POST" class="disable-on-close">
         <label>กรอกเลข:</label>
         <input type="text" name="numbers_input" placeholder="เช่น 123456" required>
         <button type="submit" name="action" value="add_number">เพิ่มเลข</button>
@@ -69,7 +60,7 @@
     <!-- แสดงเลขที่แทงเป็นปุ่มกดลบ -->
     <div class="number-buttons">
         {% for num in numbers %}
-        <form method="POST" style="display:inline;">
+        <form method="POST" style="display:inline;" class="disable-on-close">
             <input type="hidden" name="delete_idx" value="{{ loop.index0 }}">
             <button type="submit" name="action" value="delete_number" class="number-btn">
                 {{ num }}
@@ -79,7 +70,7 @@
     </div>
 
     <!-- ใส่ราคา -->
-    <form method="POST">
+    <form method="POST" class="disable-on-close">
         {% if bet_type == "2 ตัว" %}
             <label>ใส่ราคา:</label>
             <input type="number" name="price_top" value="{{ price_top }}" placeholder="บน">
@@ -103,32 +94,48 @@
         <input type="text" name="memo" value="{{ memo }}" oninput="autoSaveMemo(this.value)">
         <input type="hidden" name="action" value="set_memo" id="memo-action">
     </form>
-
-    <!-- บันทึกอัตโนมัติด้วย fetch -->
-    <script>
-    function autoSaveMemo(value) {
-        fetch("/", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-                "action": "set_memo",
-                "memo": value
-            })
-        });
-    }
-    </script>
-
+    
     <!-- ยอดรวม -->
     <div class="total-display">
         ยอดรวม: {{ total_amount }} บาท
     </div>
 
     <!-- ปุ่มล้าง/บันทึก -->
-    <form method="POST" class="form-buttons">
+    <form method="POST" class="form-buttons disable-on-close">
         <button type="submit" name="action" value="clear_input" class="btn-red">🧹 ล้างตาราง</button>
         <button type="submit" name="action" value="save_all" class="btn-green">📥 บันทึกโพยทั้งหมด</button>
     </form>
-
 </div>
+
+<!-- Countdown Script -->
+<script>
+let secondsLeft = {{ countdown_seconds }};
+const countdownEl = document.getElementById("countdown");
+const disableForms = document.querySelectorAll(".disable-on-close");
+
+function updateCountdown() {
+    if (secondsLeft <= 0) {
+        countdownEl.textContent = "ปิดรับโพยแล้ว";
+        disableForms.forEach(f => f.querySelectorAll("input,button,select").forEach(el => el.disabled = true));
+        return;
+    }
+    const d = Math.floor(secondsLeft / 86400);
+    const h = Math.floor((secondsLeft % 86400) / 3600);
+    const m = Math.floor((secondsLeft % 3600) / 60);
+    const s = secondsLeft % 60;
+    countdownEl.textContent = `เหลือเวลา: ${d} วัน ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    secondsLeft--;
+    setTimeout(updateCountdown, 1000);
+}
+updateCountdown();
+
+function autoSaveMemo(value) {
+    fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ "action": "set_memo", "memo": value })
+    });
+}
+</script>
 </body>
 </html>
