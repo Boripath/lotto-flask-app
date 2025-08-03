@@ -30,10 +30,10 @@ def render_bill_html():
         tod = int(bill.get("tod", 0))
 
         if bet_type == "2 ตัว":
-            label = "บน x ล่าง"
+            label = "<span style='color:red;'>บน x ล่าง</span>"
             price_text = f"{top} x {bottom}"
         else:
-            label = "ตรง x โต๊ด"
+            label = "<span style='color:red;'>ตรง x โต๊ด</span>"
             price_text = f"{top} x {tod}"
 
         html = f"""
