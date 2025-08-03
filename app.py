@@ -12,7 +12,7 @@ from _5_input_price import get_price_inputs, set_price_inputs, submit_bill
 from _6_bill_table import get_bill_table_data, calculate_total, render_bill_html
 from _7_note import get_memo_and_total, set_memo
 from _8_summary_footer import clear_all_data
-from _9_gspread_utils import save_to_google_sheet
+from _9_gspread_utils import update_summary_from_all_bills, connect_sheet
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "lotto_secret_key")
@@ -21,11 +21,10 @@ app.secret_key = os.environ.get("SECRET_KEY", "lotto_secret_key")
 def index():
     session_state.init_session()
 
-    # ✅ เคลียร์บิลเก่าที่ยังใช้ 'number' เดียว
+    # ✅ ล้างบิลเก่าที่ไม่สมบูรณ์ (ไม่มี 'numbers') ป้องกัน KeyError
     if "bills" in session and session["bills"]:
-        first_bill = session["bills"][0]
-        if "numbers" not in first_bill:
-            session["bills"] = []  # ล้างบิลเก่า เพื่อป้องกัน KeyError
+        if not all("numbers" in bill for bill in session["bills"]):
+            session["bills"] = []
 
     if request.method == "POST":
         action = request.form.get("action")
@@ -64,7 +63,9 @@ def index():
             session_state.edit_bill(bill_idx)
 
         elif action == "save_all":
-            save_to_google_sheet(session_state.get_bills())
+            # ✅ บันทึกลง Google Sheet (All_Bills บันทึกแล้ว)
+            # คำนวณ Summary จาก All_Bills ใหม่
+            update_summary_from_all_bills()
             clear_all_data()
             return redirect(url_for("index"))
 
@@ -77,7 +78,7 @@ def index():
 
         elif action == "toggle_double":
             toggle_double()
-            process_number_input("")
+            process_number_input("")  # ใส่เลขเบิ้ล/ตอง อัตโนมัติ
 
         return redirect(url_for("index"))
 
