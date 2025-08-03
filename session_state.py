@@ -32,9 +32,18 @@ def edit_bill(idx):
     if 0 <= idx < len(bills):
         bill = bills.pop(idx)
         session["bills"] = bills
-        # ✅ ดึงข้อมูลทั้งหมดกลับไปช่องกรอก
+
+        # ✅ ดึงข้อมูลทั้งหมดกลับไป input
         session["bet_type"] = bill.get("type", "2 ตัว")
-        session["numbers"] = bill.get("numbers", [])
+
+        if "numbers" in bill:
+            # ✅ บิลใหม่: มีหลายเลข
+            session["numbers"] = bill["numbers"]
+        else:
+            # ✅ บิลเก่า: มีเลขเดียว
+            number = bill.get("number", "")
+            session["numbers"] = [number] if number else []
+
         session["price_top"] = float(bill.get("top", 0))
         session["price_bottom"] = float(bill.get("bottom", 0))
         session["price_tod"] = float(bill.get("tod", 0))
