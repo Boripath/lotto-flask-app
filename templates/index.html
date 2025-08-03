@@ -43,9 +43,9 @@
 
     <!-- แสดงเลขที่แทงเป็นปุ่มกดลบ -->
     <div class="number-buttons">
-        {% for idx, num in enumerate(numbers) %}
+        {% for num in numbers %}
         <form method="POST" style="display:inline;">
-            <input type="hidden" name="delete_idx" value="{{ idx }}">
+            <input type="hidden" name="delete_idx" value="{{ loop.index0 }}">
             <button type="submit" name="action" value="delete_number" class="number-btn">
                 {{ num }}
             </button>
