@@ -29,9 +29,8 @@ def index():
     if request.method == "POST":
         action = request.form.get("action")
 
-        if action == "select_draw":
-            selected_date = request.form.get("draw_date")
-            session["draw_date"] = selected_date
+        if action == "set_lottery_type":
+            session["lottery_type"] = request.form.get("lottery_type", "หวยรัฐบาลไทย")
 
         elif action == "set_pricerate":
             session["pricerate"] = int(request.form.get("pricerate", 90))
@@ -63,15 +62,9 @@ def index():
             session_state.edit_bill(bill_idx)
 
         elif action == "save_all":
-            # ✅ 1. บันทึก All_Bills
             save_all_bills_to_sheet(session["bills"])
-
-            # ✅ 2. สรุปยอดใน Summary_By_Number
             update_summary_from_all_bills()
-
-            # ✅ 3. ล้างข้อมูลในเว็บ
             clear_all_data()
-
             return redirect(url_for("index"))
 
         elif action == "clear_input":
@@ -88,8 +81,8 @@ def index():
         return redirect(url_for("index"))
 
     # ✅ ดึงข้อมูลแสดงผลหน้าเว็บ
-    draw_date, countdown = select_draw_date()
-    header_html = render_header(draw_date, countdown)
+    draw_info, countdown, lottery_type = select_draw_date()
+    header_html = render_header(draw_info, countdown)
     pricerate = get_pricerate()
     bet_type = get_bet_type()
     numbers, double_mode = get_number_input()
@@ -100,7 +93,9 @@ def index():
 
     return render_template("index.html",
                            header_html=header_html,
-                           draw_date=draw_date,
+                           draw_info=draw_info,
+                           countdown=countdown,
+                           lottery_type=lottery_type,
                            pricerate=pricerate,
                            bet_type=bet_type,
                            numbers=numbers,
