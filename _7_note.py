@@ -1,14 +1,19 @@
-# _7_note.py
-from flask import session
-
 def get_memo_and_total():
     memo = session.get("memo", "")
     bills = session.get("bills", [])
-    total_top = sum(float(b.get("top", 0)) for b in bills)
-    total_bottom = sum(float(b.get("bottom", 0)) for b in bills)
-    total_tod = sum(float(b.get("tod", 0)) for b in bills)
-    total_amount = total_top + total_bottom + total_tod
-    return memo, total_amount
+    total_amount = 0
 
-def set_memo(text):
-    session["memo"] = text  # ✅ ไม่มีปุ่ม OK แล้ว ใช้งานทันที
+    for bill in bills:
+        numbers = bill.get("numbers", [])
+        count = len(numbers)
+        bet_type = bill.get("type", "2 ตัว")
+        top = float(bill.get("top", 0))
+        bottom = float(bill.get("bottom", 0))
+        tod = float(bill.get("tod", 0))
+
+        if bet_type == "2 ตัว":
+            total_amount += count * (top + bottom)
+        else:
+            total_amount += count * (top + tod)
+
+    return memo, total_amount
