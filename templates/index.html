@@ -1,98 +1,82 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>โพยหวยออนไลน์</title>
+    <title>ระบบโพยหวยออนไลน์</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 <div class="lotto-container">
     {{ header_html|safe }}
 
-    <!-- อัตราจ่าย: radio button -->
-    <form method="POST" class="form-inline">
+    <!-- อัตราจ่าย -->
+    <form method="POST">
         <label>อัตราจ่าย:</label>
         <label class="radio-label">
-            <input type="radio" name="pricerate" value="70" onchange="this.form.submit()" {% if pricerate==70 %}checked{% endif %}> 70 บาท
+            <input type="radio" name="pricerate" value="70" onchange="this.form.submit()" {% if pricerate == 70 %}checked{% endif %}>70
         </label>
         <label class="radio-label">
-            <input type="radio" name="pricerate" value="90" onchange="this.form.submit()" {% if pricerate==90 %}checked{% endif %}> 90 บาท
+            <input type="radio" name="pricerate" value="90" onchange="this.form.submit()" {% if pricerate == 90 %}checked{% endif %}>90
         </label>
         <input type="hidden" name="action" value="set_pricerate">
     </form>
 
     <!-- ประเภทการแทง -->
-    <div class="bet-type-buttons">
-        {% for bt in ["2 ตัว", "3 ตัว", "6 กลับ"] %}
-            <form method="POST" style="display:inline;">
-                <input type="hidden" name="bet_type" value="{{ bt }}">
-                <button type="submit" name="action" value="set_bet_type" class="btn-type {% if bet_type == bt %}selected{% endif %}">{{ bt }}</button>
-            </form>
+    <form method="POST" class="bet-type-buttons">
+        {% for btype in ["2 ตัว", "3 ตัว", "6 กลับ"] %}
+            <button class="btn-type {% if btype == bet_type %}selected{% endif %}" type="submit" name="bet_type" value="{{ btype }}">{{ btype }}</button>
         {% endfor %}
-    </div>
+        <input type="hidden" name="action" value="set_bet_type">
+    </form>
 
     <!-- ปุ่มใส่เลขเบิ้ล/ตอง -->
-    <form method="POST" style="margin-bottom: 10px;">
-        <button type="submit" name="action" value="toggle_double" class="btn-type {% if double_mode %}selected{% endif %}">+ ใส่เลขเบิ้ล/ตอง</button>
+    <form method="POST">
+        <button class="btn-type {% if double_mode %}selected{% endif %}" type="submit" name="action" value="toggle_double">ใส่เลขเบิ้ล/ตอง</button>
     </form>
 
     <!-- กรอกเลข -->
-    <form method="POST" class="form-grid">
-        <label>ใส่เลข:</label>
-        <input type="text" name="numbers_input" required>
-        <button type="submit" name="action" value="add_number" class="btn-blue">+ ใส่เลข</button>
+    <form method="POST">
+        <label>กรอกเลข:</label>
+        <input type="text" name="numbers_input" placeholder="เช่น 123456" required>
+        <button type="submit" name="action" value="add_number">เพิ่มเลข</button>
     </form>
+    <p class="numbers-display">เลขที่แทง: {{ numbers|join(' ') }}</p>
 
-    <p class="numbers-display">เลขที่แทง: {{ numbers|join(" ") }}</p>
-
-    <!-- ใส่ราคา ตามประเภท -->
-    <form method="POST" class="form-grid">
-        <label>ใส่ราคา</label>
+    <!-- ใส่ราคา -->
+    <form method="POST">
         {% if bet_type == "2 ตัว" %}
-            <input type="number" name="price_top" ... placeholder="บน">
-            <input type="number" name="price_bottom" ... placeholder="ล่าง">
-        {% elif bet_type == "3 ตัว" or bet_type == "6 กลับ" %}
-            <input type="number" name="price_top" ... placeholder="ตรง">
-            <input type="number" name="price_tod" ... placeholder="โต๊ด">
+            <label>ใส่ราคา:</label>
+            <input type="number" name="price_top" value="{{ price_top }}" placeholder="บน">
+            <input type="number" name="price_bottom" value="{{ price_bottom }}" placeholder="ล่าง">
+        {% else %}
+            <label>ใส่ราคา:</label>
+            <input type="number" name="price_top" value="{{ price_top }}" placeholder="ตรง">
+            <input type="number" name="price_tod" value="{{ price_tod }}" placeholder="โต๊ด">
         {% endif %}
-        <button type="submit" name="action" value="add_bill" class="btn-blue">เพิ่มบิล</button>
+        <button type="submit" name="action" value="add_bill">➕ เพิ่มบิล</button>
     </form>
 
-    {% if bills %}
-    <table class="bill-table">
-        <thead><tr><th>#</th><th>เลข</th><th>บน</th><th>ล่าง</th><th>โต๊ด</th><th></th></tr></thead>
-        <tbody>
-        {% for bill in bills %}
-        <tr>
-            <td>{{ bill.idx }}</td>
-            <td>{{ bill.number }}</td>
-            <td>{{ bill.top }}</td>
-            <td>{{ bill.bottom }}</td>
-            <td>{{ bill.tod }}</td>
-            <td>
-                <form method="POST" style="display:inline;">
-                    <input type="hidden" name="bill_idx" value="{{ bill.idx }}">
-                    <button type="submit" name="action" value="delete_bill">🗘️</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    {% endif %}
+    <!-- ตารางสรุปบิล -->
+    <div class="bill-summary">
+        {{ bill_html|safe }}
+    </div>
 
+    <!-- บันทึกช่วยจำ -->
     <form method="POST" class="form-grid">
         <label>บันทึกช่วยจำ:</label>
         <input type="text" name="memo" value="{{ memo }}" onchange="this.form.submit()">
         <input type="hidden" name="action" value="set_memo">
     </form>
 
-    <div class="total-display">ยอดรวม: {{ total_amount }}</div>
+    <!-- ยอดรวม -->
+    <div class="total-display">
+        ยอดรวม: {{ total_amount }} บาท
+    </div>
 
+    <!-- ปุ่มล้าง/บันทึก -->
     <form method="POST" class="form-buttons">
         <button type="submit" name="action" value="clear_input" class="btn-red">🧹 ล้างตาราง</button>
-        <button type="submit" name="action" value="save_all" class="btn-green">📅 บันทึกโพย</button>
+        <button type="submit" name="action" value="save_all" class="btn-green">📥 บันทึกโพยทั้งหมด</button>
     </form>
 </div>
 </body>
