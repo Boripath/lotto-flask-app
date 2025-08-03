@@ -21,6 +21,12 @@ app.secret_key = os.environ.get("SECRET_KEY", "lotto_secret_key")
 def index():
     session_state.init_session()
 
+    # ✅ เคลียร์บิลเก่าที่ยังใช้ 'number' เดียว
+    if "bills" in session and session["bills"]:
+        first_bill = session["bills"][0]
+        if "numbers" not in first_bill:
+            session["bills"] = []  # ล้างบิลเก่า เพื่อป้องกัน KeyError
+
     if request.method == "POST":
         action = request.form.get("action")
 
@@ -74,6 +80,7 @@ def index():
 
         return redirect(url_for("index"))
 
+    # ✅ ดึงข้อมูลแสดงผลหน้าเว็บ
     draw_date, countdown = select_draw_date()
     header_html = render_header(draw_date, countdown)
     pricerate = get_pricerate()
