@@ -40,7 +40,19 @@
         <input type="text" name="numbers_input" placeholder="เช่น 123456" required>
         <button type="submit" name="action" value="add_number">เพิ่มเลข</button>
     </form>
-    <p class="numbers-display">เลขที่แทง: {{ numbers|join(' ') }}</p>
+
+    <!-- แสดงเลขที่แทงเป็นปุ่มกดลบ -->
+    <div class="number-buttons">
+        {% for idx, num in enumerate(numbers) %}
+        <form method="POST" style="display:inline;">
+            <input type="hidden" name="delete_idx" value="{{ idx }}">
+            <button type="submit" name="action" value="delete_number" class="number-btn">
+                {{ num }}
+            </button>
+        </form>
+        {% endfor %}
+    </div>
+
 
     <!-- ใส่ราคา -->
     <form method="POST">
