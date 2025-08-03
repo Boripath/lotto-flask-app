@@ -1,29 +1,34 @@
 # _5_input_price.py
 from flask import session
-from session_state import add_bill
-
-# ✅ จัดการราคาบน/ล่าง/โต๊ด และเพิ่มบิล
-
-# ✅ คืนค่าราคาใน session
 
 def get_price_inputs():
-    return (
-        float(session.get("price_top", 0)),
-        float(session.get("price_bottom", 0)),
-        float(session.get("price_tod", 0))
-    )
-
-# ✅ เซตค่าราคา
+    return session.get("price_top", 0), session.get("price_bottom", 0), session.get("price_tod", 0)
 
 def set_price_inputs(top, bottom, tod):
     session["price_top"] = top
     session["price_bottom"] = bottom
     session["price_tod"] = tod
 
-# ✅ เพิ่มบิลจากราคาปัจจุบ และเลขที่กรอก
-
 def submit_bill():
+    numbers = session.get("numbers", [])
+    bet_type = session.get("bet_type", "2 ตัว")
     top = session.get("price_top", 0)
     bottom = session.get("price_bottom", 0)
     tod = session.get("price_tod", 0)
-    add_bill(top, bottom, tod)
+
+    bills = session.get("bills", [])
+    for number in numbers:
+        bills.append({
+            "type": bet_type,
+            "number": number,
+            "top": top,
+            "bottom": bottom,
+            "tod": tod
+        })
+
+    session["bills"] = bills
+    # ล้าง input
+    session["numbers"] = []
+    session["price_top"] = 0
+    session["price_bottom"] = 0
+    session["price_tod"] = 0
