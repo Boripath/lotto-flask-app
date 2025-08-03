@@ -12,7 +12,7 @@ from _5_input_price import get_price_inputs, set_price_inputs, submit_bill
 from _6_bill_table import get_bill_table_data, calculate_total, render_bill_html
 from _7_note import get_memo_and_total, set_memo
 from _8_summary_footer import clear_all_data
-from _9_gspread_utils import update_summary_from_all_bills, connect_sheet
+from _9_gspread_utils import save_all_bills_to_sheet, update_summary_from_all_bills
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "lotto_secret_key")
@@ -63,10 +63,15 @@ def index():
             session_state.edit_bill(bill_idx)
 
         elif action == "save_all":
-            # ✅ บันทึกลง Google Sheet (All_Bills บันทึกแล้ว)
-            # คำนวณ Summary จาก All_Bills ใหม่
+            # ✅ 1. บันทึก All_Bills
+            save_all_bills_to_sheet(session["bills"])
+
+            # ✅ 2. สรุปยอดใน Summary_By_Number
             update_summary_from_all_bills()
+
+            # ✅ 3. ล้างข้อมูลในเว็บ
             clear_all_data()
+
             return redirect(url_for("index"))
 
         elif action == "clear_input":
