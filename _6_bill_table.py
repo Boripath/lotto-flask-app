@@ -1,6 +1,5 @@
 # _6_bill_table.py
 from flask import session
-from utils import format_currency
 
 def get_bill_table_data():
     bills = session.get("bills", [])
@@ -74,15 +73,11 @@ def render_bill_html():
                     </form>
                 </td>
             </tr>
-            <tr style='border:1px solid #ccc;'>
-                <td style='text-align:center; border:1px solid #ccc; padding:5px;'>
-                    <div style='color:#e74c3c;'>{label}</div>
-                </td>
+            <tr>
+                <td style='text-align:center; border:1px solid #ccc; padding:5px; color:#e74c3c;'>{label}</td>
             </tr>
-            <tr style='border:1px solid #ccc;'>
-                <td style='text-align:center; border:1px solid #ccc; padding:5px;'>
-                    <div style='color:#3498db;'>{price_text}</div>
-                </td>
+            <tr>
+                <td style='text-align:center; border:1px solid #ccc; padding:5px; color:#3498db;'>{price_text}</td>
             </tr>
         </table>
         """
