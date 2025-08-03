@@ -51,13 +51,12 @@ def save_all_bills_to_sheet(bills):
 
     ws_all.append_rows(rows)
 
-# ✅ ฟังก์ชันที่ 2: คำนวณสรุปจาก All_Bills → เขียน Summary_By_Number
+# ✅ ฟังก์ชันที่ 2: สรุปยอดและแสดง 2 คอลัมน์ (เลข 2 ตัว + 3 ตัว)
 def update_summary_from_all_bills():
     sheet = connect_sheet()
     ws_all = sheet.worksheet("All_Bills")
     ws_sum = sheet.worksheet("Summary_By_Number")
 
-    # ✅ ดึงข้อมูล All_Bills
     all_data = ws_all.get_all_values()
     if len(all_data) <= 1:
         return
@@ -65,15 +64,16 @@ def update_summary_from_all_bills():
     header = all_data[0]
     data_rows = all_data[1:]
 
-    # ✅ Index
     idx_number = header.index("Number")
     idx_top = header.index("Top")
     idx_bottom = header.index("Bottom")
     idx_trong = header.index("Trong")
     idx_tod = header.index("Tod")
 
-    # ✅ รวมยอดแต่ละเลข
-    summary = {}
+    # ✅ แยกเลข 2 ตัว / 3 ตัว
+    summary_2digit = {}
+    summary_3digit = {}
+
     for row in data_rows:
         number = row[idx_number]
         top = float(row[idx_top]) if row[idx_top] else 0
@@ -81,53 +81,75 @@ def update_summary_from_all_bills():
         trong = float(row[idx_trong]) if row[idx_trong] else 0
         tod = float(row[idx_tod]) if row[idx_tod] else 0
 
-        if number not in summary:
-            summary[number] = {"top": 0, "bottom": 0, "trong": 0, "tod": 0}
+        if len(number) == 2:
+            if number not in summary_2digit:
+                summary_2digit[number] = {"top": 0, "bottom": 0}
+            summary_2digit[number]["top"] += top
+            summary_2digit[number]["bottom"] += bottom
+        elif len(number) == 3:
+            if number not in summary_3digit:
+                summary_3digit[number] = {"trong": 0, "tod": 0}
+            summary_3digit[number]["trong"] += trong
+            summary_3digit[number]["tod"] += tod
 
-        summary[number]["top"] += top
-        summary[number]["bottom"] += bottom
-        summary[number]["trong"] += trong
-        summary[number]["tod"] += tod
+    # ✅ เตรียมข้อมูลแสดงแบบ 2 ฝั่งในแถวเดียวกัน
+    max_len = max(len(summary_2digit), len(summary_3digit))
+    sorted_2 = sorted(summary_2digit.keys(), key=lambda x: int(x))
+    sorted_3 = sorted(summary_3digit.keys(), key=lambda x: int(x))
 
-    # ✅ เตรียมข้อมูลแบบเรียงเลขน้อย→มาก
-    sorted_numbers = sorted(summary.keys(), key=lambda x: int(x))
-    rows_sum = [["เลข", "รวม บน", "รวม ล่าง", "รวม ตรง", "รวม โต๊ด"]]
+    rows_sum = [["เลข 2 ตัว", "รวม บน", "รวม ล่าง", "", "เลข 3 ตัว", "รวม ตรง", "รวม โต๊ด"]]
 
-    for number in sorted_numbers:
-        data = summary[number]
-        rows_sum.append([
-            number,
-            data["top"],
-            data["bottom"],
-            data["trong"],
-            data["tod"]
-        ])
+    for i in range(max_len):
+        row = []
+        # ฝั่งเลข 2 ตัว
+        if i < len(sorted_2):
+            num2 = sorted_2[i]
+            row += [num2, summary_2digit[num2]["top"], summary_2digit[num2]["bottom"]]
+        else:
+            row += ["", "", ""]
 
-    # ✅ เขียนใหม่ทั้งหมดใน Summary_By_Number
+        row.append("")  # ช่องเว้นว่าง
+
+        # ฝั่งเลข 3 ตัว
+        if i < len(sorted_3):
+            num3 = sorted_3[i]
+            row += [num3, summary_3digit[num3]["trong"], summary_3digit[num3]["tod"]]
+        else:
+            row += ["", "", ""]
+
+        rows_sum.append(row)
+
+    # ✅ เขียนข้อมูลใหม่ทั้งหมดลง Summary_By_Number
     ws_sum.clear()
     ws_sum.update("A1", rows_sum)
 
-    # ✅ ล้างสีเก่า → สีพื้นขาว
+    # ✅ ล้างสีพื้นหลังด้วยสีขาว
     white_bg = CellFormat(backgroundColor=Color(1, 1, 1))
-    format_cell_range(ws_sum, "A2:E1000", white_bg)
+    format_cell_range(ws_sum, "A2:G1000", white_bg)
 
-    # ✅ เติมสีแดงอ่อนถ้าเกิน threshold
+    # ✅ ใส่สีแดงอ่อนถ้ายอดเกิน threshold
     red_bg = Color(1, 0.8, 0.8)
 
-    for i, row in enumerate(rows_sum[1:], start=2):
-        number, top, bottom, trong, tod = row
+    for i, row in enumerate(rows_sum[1:], start=2):  # เริ่มแถว 2
         red_cells = []
+        num2, top, bottom = row[0], row[1], row[2]
+        num3, trong, tod = row[4], row[5], row[6]
 
-        if float(top) > THRESHOLD_TOP:
-            red_cells.append(f"B{i}")
-        if float(bottom) > THRESHOLD_BOTTOM:
-            red_cells.append(f"C{i}")
-        if float(trong) > THRESHOLD_TRONG:
-            red_cells.append(f"D{i}")
-        if float(tod) > THRESHOLD_TOD:
-            red_cells.append(f"E{i}")
+        if num2:
+            if float(top) > THRESHOLD_TOP:
+                red_cells.append(f"B{i}")
+            if float(bottom) > THRESHOLD_BOTTOM:
+                red_cells.append(f"C{i}")
+            if red_cells:
+                red_cells.append(f"A{i}")  # ช่องเลข 2 ตัว
 
-        if red_cells:
-            red_cells.append(f"A{i}")  # ไฮไลต์ช่องเลข
-            for cell in red_cells:
-                format_cell_range(ws_sum, cell, CellFormat(backgroundColor=red_bg))
+        if num3:
+            if float(trong) > THRESHOLD_TRONG:
+                red_cells.append(f"F{i}")
+            if float(tod) > THRESHOLD_TOD:
+                red_cells.append(f"G{i}")
+            if "F{i}" in red_cells or "G{i}" in red_cells:
+                red_cells.append(f"E{i}")  # ช่องเลข 3 ตัว
+
+        for cell in red_cells:
+            format_cell_range(ws_sum, cell, CellFormat(backgroundColor=red_bg))
