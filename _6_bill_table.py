@@ -1,8 +1,7 @@
 from flask import session
 
 def get_bill_table_data():
-    bills = session.get("bills", [])
-    return bills  # ✅ คืนทั้งบิลแบบไม่ต้องจัดกลุ่ม
+    return session.get("bills", [])
 
 def calculate_total():
     bills = session.get("bills", [])
@@ -18,11 +17,17 @@ def render_bill_html():
     html_parts = []
 
     for idx, bill in enumerate(bills):
-        bet_type = bill["type"]
-        numbers = " ".join(bill["numbers"])
-        top = int(bill["top"])
-        bottom = int(bill["bottom"])
-        tod = int(bill["tod"])
+        bet_type = bill.get("type", "")
+        
+        # ✅ แก้ KeyError: ตรวจว่าบิลนี้มีเลขแบบใหม่หรือเก่า
+        if "numbers" in bill:
+            numbers = " ".join(bill["numbers"])
+        else:
+            numbers = bill.get("number", "")
+
+        top = int(bill.get("top", 0))
+        bottom = int(bill.get("bottom", 0))
+        tod = int(bill.get("tod", 0))
 
         if bet_type == "2 ตัว":
             label = "บน x ล่าง"
