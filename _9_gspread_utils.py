@@ -2,6 +2,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 from gspread_formatting import CellFormat, Color, format_cell_range
 from datetime import datetime
+from flask import session
 
 # ✅ Google Sheet config
 SHEET_NAME = "LottoBills"
@@ -16,27 +17,55 @@ THRESHOLD_BOTTOM = 100
 THRESHOLD_TRONG = 10
 THRESHOLD_TOD = 10
 
-# ✅ ฟังก์ชันเชื่อมต่อ Google Sheet
+# ✅ เชื่อมต่อ Google Sheet
 def connect_sheet():
     creds = Credentials.from_service_account_file("credentials.json", scopes=SCOPES)
     client = gspread.authorize(creds)
     return client.open(SHEET_NAME)
 
-# ✅ คำนวณสรุปยอดเลขจากข้อมูลใน All_Bills แล้วเขียนลง Summary_By_Number
+# ✅ ฟังก์ชันที่ 1: บันทึก All_Bills
+def save_all_bills_to_sheet(bills):
+    if not bills:
+        return
+
+    sheet = connect_sheet()
+    ws_all = sheet.worksheet("All_Bills")
+
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    draw_date = session.get("draw_date", "")
+    memo = session.get("memo", "")
+
+    rows = []
+    for bill in bills:
+        bet_type = bill.get("type", "")
+        numbers = bill.get("numbers", [])
+        top = bill.get("top", 0)
+        bottom = bill.get("bottom", 0)
+        tod = bill.get("tod", 0)
+
+        for number in numbers:
+            if bet_type == "2 ตัว":
+                rows.append([ts, draw_date, bet_type, number, top, bottom, "", "", memo])
+            else:  # 3 ตัว / 6 กลับ
+                rows.append([ts, draw_date, bet_type, number, "", "", top, tod, memo])
+
+    ws_all.append_rows(rows)
+
+# ✅ ฟังก์ชันที่ 2: คำนวณสรุปจาก All_Bills → เขียน Summary_By_Number
 def update_summary_from_all_bills():
     sheet = connect_sheet()
     ws_all = sheet.worksheet("All_Bills")
     ws_sum = sheet.worksheet("Summary_By_Number")
 
-    # ✅ ดึงข้อมูลจาก All_Bills (skip header)
+    # ✅ ดึงข้อมูล All_Bills
     all_data = ws_all.get_all_values()
     if len(all_data) <= 1:
-        return  # ไม่มีข้อมูลใหม่
+        return
 
     header = all_data[0]
     data_rows = all_data[1:]
 
-    # ✅ Index ของแต่ละคอลัมน์
+    # ✅ Index
     idx_number = header.index("Number")
     idx_top = header.index("Top")
     idx_bottom = header.index("Bottom")
@@ -60,7 +89,7 @@ def update_summary_from_all_bills():
         summary[number]["trong"] += trong
         summary[number]["tod"] += tod
 
-    # ✅ สร้าง rows เรียงเลขจากน้อย → มาก
+    # ✅ เตรียมข้อมูลแบบเรียงเลขน้อย→มาก
     sorted_numbers = sorted(summary.keys(), key=lambda x: int(x))
     rows_sum = [["เลข", "รวม บน", "รวม ล่าง", "รวม ตรง", "รวม โต๊ด"]]
 
@@ -74,36 +103,31 @@ def update_summary_from_all_bills():
             data["tod"]
         ])
 
-    # ✅ ล้างข้อมูลเก่า + เขียนใหม่ใน Summary_By_Number
+    # ✅ เขียนใหม่ทั้งหมดใน Summary_By_Number
     ws_sum.clear()
     ws_sum.update("A1", rows_sum)
 
-    # ✅ ล้างสีพื้นหลังด้วยสีขาว (แทน clear_format)
+    # ✅ ล้างสีเก่า → สีพื้นขาว
     white_bg = CellFormat(backgroundColor=Color(1, 1, 1))
     format_cell_range(ws_sum, "A2:E1000", white_bg)
 
-    # ✅ ใส่พื้นหลังสีแดงอ่อนถ้าเกิน threshold
+    # ✅ เติมสีแดงอ่อนถ้าเกิน threshold
     red_bg = Color(1, 0.8, 0.8)
 
-    for i, row in enumerate(rows_sum[1:], start=2):  # เริ่มจากแถวที่ 2
+    for i, row in enumerate(rows_sum[1:], start=2):
         number, top, bottom, trong, tod = row
-        apply_red = False
         red_cells = []
 
         if float(top) > THRESHOLD_TOP:
             red_cells.append(f"B{i}")
-            apply_red = True
         if float(bottom) > THRESHOLD_BOTTOM:
             red_cells.append(f"C{i}")
-            apply_red = True
         if float(trong) > THRESHOLD_TRONG:
             red_cells.append(f"D{i}")
-            apply_red = True
         if float(tod) > THRESHOLD_TOD:
             red_cells.append(f"E{i}")
-            apply_red = True
-        if apply_red:
-            red_cells.append(f"A{i}")  # เน้นช่องเลขด้วย
 
-        for cell in red_cells:
-            format_cell_range(ws_sum, cell, CellFormat(backgroundColor=red_bg))
+        if red_cells:
+            red_cells.append(f"A{i}")  # ไฮไลต์ช่องเลข
+            for cell in red_cells:
+                format_cell_range(ws_sum, cell, CellFormat(backgroundColor=red_bg))
