@@ -53,7 +53,11 @@ def index():
         elif action == "delete_bill":
             bill_idx = int(request.form.get("bill_idx", -1))
             session_state.delete_bill(bill_idx)
-
+        
+        elif action == "edit_bill":
+            bill_idx = int(request.form.get("bill_idx", -1))
+            session_state.edit_bill(bill_idx)
+            
         elif action == "save_all":
             save_to_google_sheet(session_state.get_bills())
             clear_all_data()
