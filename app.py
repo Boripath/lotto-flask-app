@@ -77,6 +77,7 @@ def index():
 
         elif action == "toggle_double":
             toggle_double()
+            process_number_input("")
 
         return redirect(url_for("index"))
 
