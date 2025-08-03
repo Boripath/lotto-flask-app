@@ -76,9 +76,25 @@
     <!-- บันทึกช่วยจำ -->
     <form method="POST" class="form-grid">
         <label>บันทึกช่วยจำ:</label>
-        <input type="text" name="memo" value="{{ memo }}" onchange="this.form.submit()">
-        <input type="hidden" name="action" value="set_memo">
+        <input type="text" name="memo" value="{{ memo }}" 
+               oninput="autoSaveMemo(this.value)">
+        <input type="hidden" name="action" value="set_memo" id="memo-action">
     </form>
+    
+    <!-- เพิ่ม JavaScript สำหรับบันทึกอัตโนมัติ -->
+    <script>
+    function autoSaveMemo(value) {
+        fetch("/", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+                "action": "set_memo",
+                "memo": value
+            })
+        });
+    }
+    </script>
+
 
     <!-- ยอดรวม -->
     <div class="total-display">
