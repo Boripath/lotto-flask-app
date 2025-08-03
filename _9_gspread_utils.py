@@ -1,105 +1,105 @@
 import gspread
 from google.oauth2.service_account import Credentials
+from gspread_formatting import CellFormat, Color, format_cell_range, clear_format
 from datetime import datetime
-from flask import session
 
+# ✅ Google Sheet config
 SHEET_NAME = "LottoBills"
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
 ]
 
+# ✅ Threshold ค่าที่ตั้งไว้
+THRESHOLD_TOP = 100
+THRESHOLD_BOTTOM = 100
+THRESHOLD_TRONG = 10
+THRESHOLD_TOD = 10
+
+# ✅ ฟังก์ชันเชื่อมต่อ Google Sheet
 def connect_sheet():
     creds = Credentials.from_service_account_file("credentials.json", scopes=SCOPES)
     client = gspread.authorize(creds)
-    sheet = client.open(SHEET_NAME)
-    return sheet
+    return client.open(SHEET_NAME)
 
-def save_to_google_sheet(bills):
-    if not bills:
-        return
-
+# ✅ คำนวณสรุปยอดเลขจากข้อมูลใน All_Bills แล้วเขียนลง Summary_By_Number
+def update_summary_from_all_bills():
     sheet = connect_sheet()
     ws_all = sheet.worksheet("All_Bills")
     ws_sum = sheet.worksheet("Summary_By_Number")
 
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    draw_date = session.get("draw_date", "")
-    memo = session.get("memo", "")
+    # ✅ ดึงข้อมูลจาก All_Bills (skip header)
+    all_data = ws_all.get_all_values()
+    header = all_data[0]
+    data_rows = all_data[1:]
 
-    # ✅ ตั้งค่าขีดจำกัดยอด (thresholds)
-    threshold_top = 100
-    threshold_bottom = 100
-    threshold_trong = 10
-    threshold_tod = 10
+    # ✅ Index ของแต่ละคอลัมน์
+    idx_number = header.index("Number")
+    idx_top = header.index("Top")
+    idx_bottom = header.index("Bottom")
+    idx_trong = header.index("Trong")
+    idx_tod = header.index("Tod")
 
-    # ✅ เตรียมข้อมูลสำหรับ All_Bills
-    rows_all = []
-    for bill in bills:
-        bet_type = bill.get("type", "")
-        numbers = bill.get("numbers", [])
-        top = float(bill.get("top", 0))
-        bottom = float(bill.get("bottom", 0))
-        tod = float(bill.get("tod", 0))
+    # ✅ รวมยอดแต่ละเลข
+    summary = {}
+    for row in data_rows:
+        number = row[idx_number]
+        top = float(row[idx_top]) if row[idx_top] else 0
+        bottom = float(row[idx_bottom]) if row[idx_bottom] else 0
+        trong = float(row[idx_trong]) if row[idx_trong] else 0
+        tod = float(row[idx_tod]) if row[idx_tod] else 0
 
-        for number in numbers:
-            if bet_type == "2 ตัว":
-                rows_all.append([timestamp, draw_date, bet_type, number, top, bottom, "", "", memo])
-            else:  # 3 ตัว / 6 กลับ
-                rows_all.append([timestamp, draw_date, bet_type, number, "", "", top, tod, memo])
+        if number not in summary:
+            summary[number] = {"top": 0, "bottom": 0, "trong": 0, "tod": 0}
 
-    # ✅ เขียน All_Bills (append)
-    ws_all.append_rows(rows_all)
+        summary[number]["top"] += top
+        summary[number]["bottom"] += bottom
+        summary[number]["trong"] += trong
+        summary[number]["tod"] += tod
 
-    # ✅ สรุปยอดเลขทั้งหมด (รวมจาก rows_all)
-    summary_dict = {}
-    for row in rows_all:
-        number = row[3]
-        top = float(row[4]) if row[4] else 0
-        bottom = float(row[5]) if row[5] else 0
-        trong = float(row[6]) if row[6] else 0
-        tod = float(row[7]) if row[7] else 0
-
-        if number not in summary_dict:
-            summary_dict[number] = {"top": 0, "bottom": 0, "trong": 0, "tod": 0}
-
-        summary_dict[number]["top"] += top
-        summary_dict[number]["bottom"] += bottom
-        summary_dict[number]["trong"] += trong
-        summary_dict[number]["tod"] += tod
-
-    # ✅ เตรียม Summary: เรียงเลขจากน้อย → มาก
+    # ✅ สร้าง rows เรียงเลขน้อย → มาก
+    sorted_numbers = sorted(summary.keys(), key=lambda x: int(x))
     rows_sum = [["เลข", "รวม บน", "รวม ล่าง", "รวม ตรง", "รวม โต๊ด"]]
-    numbers_sorted = sorted(summary_dict.keys(), key=lambda x: int(x))
 
-    for number in numbers_sorted:
-        data = summary_dict[number]
-        rows_sum.append([number, data["top"], data["bottom"], data["trong"], data["tod"]])
+    for number in sorted_numbers:
+        data = summary[number]
+        rows_sum.append([
+            number,
+            data["top"],
+            data["bottom"],
+            data["trong"],
+            data["tod"]
+        ])
 
-    # ✅ ล้างข้อมูลเก่า + เขียนใหม่ใน Summary_By_Number
+    # ✅ ล้างข้อมูลเก่า + เขียนข้อมูลใหม่ลง Summary_By_Number
     ws_sum.clear()
     ws_sum.update("A1", rows_sum)
 
-    # ✅ เพิ่มสีแดงอ่อนถ้าเกิน threshold
-    from gspread_formatting import CellFormat, Color, format_cell_range
+    # ✅ ล้างสีเดิมก่อน
+    clear_format(ws_sum, "A2:E1000")
 
-    red_bg = Color(1, 0.8, 0.8)  # แดงอ่อน
-    default_bg = Color(1, 1, 1)
+    # ✅ ใส่พื้นหลังสีแดงอ่อนถ้าเกิน threshold
+    red_bg = Color(1, 0.8, 0.8)
 
-    for i, row in enumerate(rows_sum[1:], start=2):  # เริ่มจากแถว 2
-        num, top, bottom, trong, tod = row
-        format_ranges = []
+    for i, row in enumerate(rows_sum[1:], start=2):  # เริ่มจากแถวที่ 2
+        number, top, bottom, trong, tod = row
+        apply_red = False
+        red_cells = []
 
-        if top > threshold_top:
-            format_ranges.append(f"B{i}")
-        if bottom > threshold_bottom:
-            format_ranges.append(f"C{i}")
-        if trong > threshold_trong:
-            format_ranges.append(f"D{i}")
-        if tod > threshold_tod:
-            format_ranges.append(f"E{i}")
-        if format_ranges:
-            format_ranges.append(f"A{i}")  # เลข ต้องแดงด้วยถ้าเกิน
+        if float(top) > THRESHOLD_TOP:
+            red_cells.append(f"B{i}")
+            apply_red = True
+        if float(bottom) > THRESHOLD_BOTTOM:
+            red_cells.append(f"C{i}")
+            apply_red = True
+        if float(trong) > THRESHOLD_TRONG:
+            red_cells.append(f"D{i}")
+            apply_red = True
+        if float(tod) > THRESHOLD_TOD:
+            red_cells.append(f"E{i}")
+            apply_red = True
+        if apply_red:
+            red_cells.append(f"A{i}")  # เลขต้องแดงด้วย
 
-        for cell in format_ranges:
+        for cell in red_cells:
             format_cell_range(ws_sum, cell, CellFormat(backgroundColor=red_bg))
