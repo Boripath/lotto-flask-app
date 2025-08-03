@@ -7,7 +7,32 @@
 </head>
 <body>
 <div class="lotto-container">
-    {{ header_html|safe }}
+
+    <!-- ✅ เลือกชนิดหวย -->
+    <form method="POST">
+        <label>ชนิดหวย:</label>
+        <label class="radio-label">
+            <input type="radio" name="lottery_type" value="หวยรัฐบาลไทย" onchange="this.form.submit()" {% if lottery_type == 'หวยรัฐบาลไทย' %}checked{% endif %}> หวยรัฐบาลไทย
+        </label>
+        <label class="radio-label">
+            <input type="radio" name="lottery_type" value="หวยลาวพัฒนา" onchange="this.form.submit()" {% if lottery_type == 'หวยลาวพัฒนา' %}checked{% endif %}> หวยลาวพัฒนา (จ,พ,ศ)
+        </label>
+        <label class="radio-label">
+            <input type="radio" name="lottery_type" value="หวยฮานอย พิเศษ" onchange="this.form.submit()" {% if lottery_type == 'หวยฮานอย พิเศษ' %}checked{% endif %}> หวยฮานอย พิเศษ
+        </label>
+        <label class="radio-label">
+            <input type="radio" name="lottery_type" value="หวยฮานอย" onchange="this.form.submit()" {% if lottery_type == 'หวยฮานอย' %}checked{% endif %}> หวยฮานอย
+        </label>
+        <label class="radio-label">
+            <input type="radio" name="lottery_type" value="หวยฮานอย VIP" onchange="this.form.submit()" {% if lottery_type == 'หวยฮานอย VIP' %}checked{% endif %}> หวยฮานอย VIP
+        </label>
+        <input type="hidden" name="action" value="set_lottery_type">
+    </form>
+
+    <!-- ✅ แสดงงวดและ Countdown -->
+    <div class="draw-info-box">
+        <b>{{ draw_info }}</b> | <span style="color:red;">{{ countdown }}</span>
+    </div>
 
     <!-- อัตราจ่าย -->
     <form method="POST">
@@ -53,7 +78,6 @@
         {% endfor %}
     </div>
 
-
     <!-- ใส่ราคา -->
     <form method="POST">
         {% if bet_type == "2 ตัว" %}
@@ -76,12 +100,11 @@
     <!-- บันทึกช่วยจำ -->
     <form method="POST" class="form-grid">
         <label>บันทึกช่วยจำ:</label>
-        <input type="text" name="memo" value="{{ memo }}" 
-               oninput="autoSaveMemo(this.value)">
+        <input type="text" name="memo" value="{{ memo }}" oninput="autoSaveMemo(this.value)">
         <input type="hidden" name="action" value="set_memo" id="memo-action">
     </form>
-    
-    <!-- เพิ่ม JavaScript สำหรับบันทึกอัตโนมัติ -->
+
+    <!-- บันทึกอัตโนมัติด้วย fetch -->
     <script>
     function autoSaveMemo(value) {
         fetch("/", {
@@ -95,7 +118,6 @@
     }
     </script>
 
-
     <!-- ยอดรวม -->
     <div class="total-display">
         ยอดรวม: {{ total_amount }} บาท
@@ -106,6 +128,7 @@
         <button type="submit" name="action" value="clear_input" class="btn-red">🧹 ล้างตาราง</button>
         <button type="submit" name="action" value="save_all" class="btn-green">📥 บันทึกโพยทั้งหมด</button>
     </form>
+
 </div>
 </body>
 </html>
