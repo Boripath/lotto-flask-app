@@ -64,6 +64,19 @@ def delete_bill(idx):
         bills.pop(idx)
         session["bills"] = bills
 
+def edit_bill(idx):
+    bills = session.get("bills", [])
+    if 0 <= idx < len(bills):
+        bill = bills.pop(idx)
+        session["bills"] = bills
+        # ย้อนข้อมูลกลับไป input
+        session["bet_type"] = bill.get("type", "2 ตัว")
+        session["numbers"] = [bill.get("number", "")]
+        session["price_top"] = float(bill.get("top", 0))
+        session["price_bottom"] = float(bill.get("bottom", 0))
+        session["price_tod"] = float(bill.get("tod", 0))
+
+
 # ✅ ดึงข้อมูลทั้งหมดของบิล
 
 def get_bills():
